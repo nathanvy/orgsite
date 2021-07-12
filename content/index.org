@@ -1,0 +1,38 @@
+* ABOUT
+  I'm an aerospace engineer living on Vancouver Island and passionate about hardware hacking, cryptography, elections integrity, World War II combat flight simulators, and ultimate frisbee.
+
+  When COVID happened I figured like most people that it wouldn't be such a long haul.  I learned to cook the 5 mother sauces and played a lot of video games.  As the pandemic and lockdowns stretched on I figured I'd start blogging about things that interest me.  This is my personal combination blog/notebook where I gradually collect articles that I write about topics that interest me that may or may not have any value to anyone else.
+
+  This is a living notebook, kinda like a /zettelkasten/ but without the hype.  You might encounter broken links and spelling mistakes because I'm always updating and editing.
+
+* ARTICLES:
+** June 2021
+   #+html:<span class="mt0">
+*** [[file:pro-cooking.html][PRO @ COOKING]]
+    #+html: </span>
+    A nod to Pure Pwnage, and a friendly dig at the excessive page weight of most cooking blogs.
+  
+** March 2021
+   #+html: <span class="mt0">
+*** [[file:raspi.html][RASPI GARDENER]]
+    #+html: </span>
+    Augmented gardening with embedded systems and push notifications to my phone.
+
+** January 2021
+   #+html: <span class="mt0">
+*** [[file:orgsite.html][BLOGGING WITH ORG-MODE AND GNU MAKE]]
+    #+html: </span>
+    I've tried I think all the static site generators at this point and most of them are over-engineered for my use case so I wrote my own ultra-minimalist one.
+    
+** December 2020
+   #+html: <span class="mt0">
+*** [[file:csharp-emacs.html][DEVELOPING IN C# WITH .NET CORE AND EMACS]]
+    #+html: </span>
+    Troll your friends and coworkers by writing C# in Emacs, with "intellisense" code-completion!
+    
+** October  2020
+   #+html: <span class="mt0">
+*** [[file:ubiquiti.html][UNIFI-CATION]]
+    #+html: </span>
+     Upgrading my home network by installing some Ubiquiti UniFi gear.
+     

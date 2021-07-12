@@ -1,0 +1,63 @@
+* Writing C# in Emacs
+  I contribute to an open source project written in C# that I helped port to dotnet core (and thus natively to mac and linux) and when I mentioned it recently on Hacker News [[https://news.ycombinator.com/item?id=23456407][I was asked to comment]] on my setup for writing C# on emacs, while still gaining the benefits of Intellisense-style code completion.
+
+*** The setup
+    Writing C# in Emacs depends on just a handful of packages:
+
+    - csharp-mode for syntax highlighting and indentation
+    - company-mode as the code completion frontend
+    - an implementation of a Language Server, via lsp-mode, as the code completion backend
+
+    I happen to use the use-package macro to simplify my emacs config, so that's how these examples will be presented, but this setup will work without it.
+
+*** csharp-mode
+        Pretty straightforward declaration. I've added two hooks so that company and rainbow-delimiters will automatically be invoked when we invoke csharp mode (or when we open a .cs file).
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package csharp-mode :ensure t
+	:init
+	(add-hook 'csharp-mode-hook #'company-mode)
+	(add-hook 'csharp-mode-hook #'rainbow-delimiters-mode))
+    #+END_SRC
+
+*** company-mode
+    Next let's add company mode to our init.  Previous versions of this page had company-omnisharp in here, but that is no longer required with lsp-mode.
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package company :ensure t :mode "company-mode")
+      (use-package company-box :ensure t
+	:hook (company-mode . company-box-mode))
+    #+END_SRC
+
+*** Omnisharp and LSP
+    Omnisharp is actually a family of projects that implement various tooling and libraries to support .NET development, but what I liked the most is the omnisharp-emacs package which uses the Roslyn language server to provide "Intellisense" via the company frontend.  However, in the last couple of years omnisharp has been deprecated in favour of Language Server Protocol to provide completion-at-point (CAPF) functions.
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package lsp-mode
+	:ensure t
+	:init
+	;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+	(setq lsp-keymap-prefix "C-c l")
+	:hook ((csharp-mode . lsp)
+	       (python-mode . (lambda ()
+				(require 'lsp-python-ms)
+				(lsp))))
+	:commands lsp)
+
+      (use-package lsp-ui
+	:ensure t
+	:commands lsp-ui-mode)
+
+      (use-package flycheck
+	:ensure t
+	:init (global-flycheck-mode))
+
+      (use-package lsp-treemacs
+	:ensure t
+	:commands lsp-treemacs-errors-list)
+    #+END_SRC
+
+*** Wrapping up
+    That's pretty much all there is to it!  Once you get lsp-mode installed it's necessary to install the actual server implementations on a per-language basis.  For C# it's a no-brainer as there's only one (that I'm aware of) however for languages like python there are several competing language server implementations with various trade-offs so it's not always clear which one to use.  The good news is that lsp-mode will auto-detect company-mode and friends, and furthermore will prompt you to install a language servers in scenarios where it cannot auto-install.
+    
+    My complete emacs init file is not particularly sophisticated as I'm a bit of an emacs minimalist but it is [[https://github.com/nathanvy/dotemacs][available on github]].

@@ -1,0 +1,16 @@
+* PRO AT COOKING
+  For the uninitiated:  https://www.youtube.com/watch?v=uYwvfxWF460
+  
+  When the COVID-19 pandemic and associated lockdowns hit, and work-from-home abruptly became the new normal, I decided I'd up my game.  I have been a decent cook since my early twenties (thank you Mom!) but when you're working from home and everything is closed, it's fun to experiment in the kitchen.  I flatter myself that I have graduated from being a decent cook to a very good cook.  One of the things I've focused on over the last 2-3 years is expanding my repertoire of techniques and my familiarity with the foundations of various dishes.  That has necessarily meant a lot of time exploring recipes and food-related blogs online, and I have come to despise what I call the "standard food blog format" which is a gargantuan page in the tens of megabytes, with 3-4 pages of the author's life story and mostly-unrelated anecdotes and crammed full of tracking javascript (to say nothing of ads, though I run [[https://github.com/gorhill/uBlock][uBlock Origin]] on all my devices).
+
+  When my daughter was born I started collecting recipes into an old leather-bound notebook I had lying around.  My intent was to give it to her when she moves out to get her own place; a sort of combination-family cookbook/combination-getting started cooking guide.  It's not just recipes but also things like The Canadian Rule for grilling fish, rules of thumb for doing rice in the Instant Pot, etc.
+
+  When my son was born in February of 2021 I decided I would make a second book for him, but then of course I realized when I inevitably give these books away I'll miss them as references, so I decided I would make The Cooking Blog for People Who Hate Cooking Blogs, and thus with a nod to [[http://www.purepwnage.com/][Pure Pwnage]] (one of the finest comedy series of our age)  PRO AT COOKING was born.  No giant auto-play video ads.  No essays about mindfulness preceding a recipe for fried chicken.  Short blurbs about the recipe or topic in question, no comment sections, and no social media tracking junk.  If you hate my recipes you can track me down somehow and send me a nastygram via email or something.
+
+  Under no circumstances do I claim to be a Michelin-quality chef or anything like that, but I'm a pretty good cook and I have a small and growing collection of recipes that I find myself coming back to.  Some of these recipes are faithful homages and strive to be as authentic as possible.  Some of them are unabashed white person bastardizations.  All of them are recipes I've made multiple times and have adapted to the realities of living in Canada.  Sometimes you can't get a particular ingredient that's common in Japan, for example, so I use what I feel is an acceptable substitute.
+  
+*** I'll Call It What It Is, Kyle...
+    My philosophy in the kitchen is to go for full flavour.  If a dish is unhealthy, I'm not going to create a "healthier version" of it.  Some things that are delicious are just bad for us, and my personal philosophy is to simply  eat those things less often, and/or to eat them in smaller portions, rather than try to contort apple pie or fried chicken into something approaching health food.
+    
+    In any case, here's the link: [[file:pro-at-cooking/index.html][PRO AT COOKING]]!
+    
