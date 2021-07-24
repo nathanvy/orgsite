@@ -1,4 +1,7 @@
 * PRO AT COOKING
+  #+html:<span class="green">
+  June 2021
+  #+html:</span>
   For the uninitiated:  https://www.youtube.com/watch?v=uYwvfxWF460
   
   When the COVID-19 pandemic and associated lockdowns hit, and work-from-home abruptly became the new normal, I decided I'd up my game.  I have been a decent cook since my early twenties (thank you Mom!) but when you're working from home and everything is closed, it's fun to experiment in the kitchen.  I flatter myself that I have graduated from being a decent cook to a very good cook.  One of the things I've focused on over the last 2-3 years is expanding my repertoire of techniques and my familiarity with the foundations of various dishes.  That has necessarily meant a lot of time exploring recipes and food-related blogs online, and I have come to despise what I call the "standard food blog format" which is a gargantuan page in the tens of megabytes, with 3-4 pages of the author's life story and mostly-unrelated anecdotes and crammed full of tracking javascript (to say nothing of ads, though I run [[https://github.com/gorhill/uBlock][uBlock Origin]] on all my devices).

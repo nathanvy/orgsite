@@ -1,4 +1,7 @@
 * Writing C# in Emacs
+  #+html:<span class="green">
+  December 2020
+  #+html:</span>
   I contribute to an open source project written in C# that I helped port to dotnet core (and thus natively to mac and linux) and when I mentioned it recently on Hacker News [[https://news.ycombinator.com/item?id=23456407][I was asked to comment]] on my setup for writing C# on emacs, while still gaining the benefits of Intellisense-style code completion.
 
 *** The setup

@@ -1,5 +1,8 @@
 * RasPi-Gardener
-I'm not exactly sure why it is, but it seems like there's a lot of people on the internet building, shall we say, "gardening assistive devices" aka taking their raspberry pis and using them to monitor soil moisture.  I think it's because this sort of project sits right at the overlap of coding, electronics, and real-world utility.  Either way, I spent quite a lot of time doing research and implemented a prototype.  There are a lot of different ways to implement it but in general you measure an electrical signal and interpret it as a proxy for soil water content, and then alert or log as you wish.
+  #+html:<span class="green">
+  March 2021
+  #+html:</span>
+  I'm not exactly sure why it is, but it seems like there's a lot of people on the internet building, shall we say, "gardening assistive devices" aka taking their raspberry pis and using them to monitor soil moisture.  I think it's because this sort of project sits right at the overlap of coding, electronics, and real-world utility.  Either way, I spent quite a lot of time doing research and implemented a prototype.  There are a lot of different ways to implement it but in general you measure an electrical signal and interpret it as a proxy for soil water content, and then alert or log as you wish.
 
 *** Building a transducer
     There are all sorts of ways to interpret soil moisture as an actionable electrical signal but the two common ones are using electrodes and measuring resistance or measuring capacitance.  Resistance causes electrolysis on one of the electrodes and possibly also messes with your soil pH so I opted for a capacitive sensor.  Lots of designs online had fancy 555 timers and RC oscillators but after fiddling around with breadboards and my oscilloscope I opted for a simpler design.

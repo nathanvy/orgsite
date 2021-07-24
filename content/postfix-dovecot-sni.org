@@ -1,4 +1,7 @@
 * Server Name Indication (SNI) in Dovecot and Postfix
+  #+html:<span class="green">
+  July 2021
+  #+html:</span>
   A while back I decided that I would progressively de-Google my online life.  As part of that I have set up my own email server on this domain (0x85.org) and naturally that involved installing ~dovecot~, an IMAP server, and ~postfix~, a Mail Transfer Agent (MTA) that speaks SMTP.  It's actually quite daunting because there are an awful lot of moving parts that have to work /just so/ for mail to be delivered into the big providers' networks.
 
   I toyed back and forth with doing a huge writeup but frankly I'd just be copying the excellent [[https://workaround.org/ispmail][workaround.org ISPmail]] tutorial.  If you are interested in setting up your own mail server, follow this guide.  It covers all the bases, from dovecot and postfix to rspamd and iptables.
