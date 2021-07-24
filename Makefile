@@ -4,7 +4,8 @@ CXX=cat
 CXXPRE=templates/prependix.html
 CXXMID=templates/prependix2.html
 CXXPOST=templates/appendix.html
-TARGETS=staging/index.html staging/csharp-emacs.html staging/ubiquiti.html staging/raspi.html staging/orgsite.html staging/pro-cooking.html
+TARGETS=staging/index.html staging/csharp-emacs.html staging/ubiquiti.html staging/raspi.html staging/orgsite.html staging/pro-cooking.html \
+staging/postfix-dovecot-sni.html
 
 default: $(TARGETS)
 

@@ -6,6 +6,12 @@
   This is a living notebook, kinda like a /zettelkasten/ but without the hype.  You might encounter broken links and spelling mistakes because I'm always updating and editing.
 
 * ARTICLES:
+** July 2021
+   #+html:<span class="mt0">
+*** [[file:postfix-dovecot-sni.html][Server Name Indication (SNI) in dovecot and postfix]]
+    #+html:</span>
+    A small erratum for the wonderful Workaround.org ISPmail guide, and a howto for getting SNI working with dovecot and postfix.
+    
 ** June 2021
    #+html:<span class="mt0">
 *** [[file:pro-cooking.html][PRO @ COOKING]]

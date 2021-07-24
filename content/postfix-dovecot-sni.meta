@@ -1,0 +1,3 @@
+    <title>Setting up SNI in Postfix and Dovecot - 0x85.org</title>
+    <meta name="description" content="Multiple domains and certificates for a single instance of dovecot and postfix" />
+    <link rel="canonical" href="https://0x85.org/postfix-dovecot-sni.html" />

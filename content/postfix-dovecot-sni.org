@@ -1,0 +1,59 @@
+* Server Name Indication (SNI) in Dovecot and Postfix
+  A while back I decided that I would progressively de-Google my online life.  As part of that I have set up my own email server on this domain (0x85.org) and naturally that involved installing ~dovecot~, an IMAP server, and ~postfix~, a Mail Transfer Agent (MTA) that speaks SMTP.  It's actually quite daunting because there are an awful lot of moving parts that have to work /just so/ for mail to be delivered into the big providers' networks.
+
+  I toyed back and forth with doing a huge writeup but frankly I'd just be copying the excellent [[https://workaround.org/ispmail][workaround.org ISPmail]] tutorial.  If you are interested in setting up your own mail server, follow this guide.  It covers all the bases, from dovecot and postfix to rspamd and iptables.
+
+  However I will note that Christoph has made a small error:  in the guide for Debian Buster (the most current guide) he notes that you can't set up SNI (Server Name Indication) on dovecot and postfix which means if your server has more than one domain you'll need a generic-enough mx record to handle mail for all your domains.
+
+*** HOWEVER. . .  
+
+Postfix supports SNI as of 3.4.0:  http://www.postfix.org/announcements/postfix-3.4.0.html
+
+Dovecot also supports SNI: https://doc.dovecot.org/configuration_manual/dovecot_ssl_configuration/
+
+Let's see how this goes together.
+
+*** Postfix
+
+    First, in ~main.cf~:
+    #+begin_src
+        indexed = ${default_database_type}:${config_directory}/
+        tls_server_sni_maps = ${indexed}sni.map
+    #+end_src
+
+    Then, in the file ~sni.map~ specified above:
+  #+begin_src
+mail.example.com /etc/letsencrypt/live/mail.example.com/privkey.pem /etc/letsencrypt/live/mail.example.com/fullchain.pem
+mail.example2.net /etc/letsencrypt/live/mail.example2.net/privkey.pem /etc/letsencrypt/live/mail.example2.net/fullchain.pem
+  #+end_src
+
+  Next issue a rehash to postfix:
+  #+begin_src bash
+    $ postmap -F hash:/etc/postfix/sni.map
+  #+end_src
+
+  And then reload postfix.
+
+*** Dovecot
+
+    Dovecot is a little simpler.  You can (optionally) define a default cert to use, and then define a series of local names which will match in order based on the mailbox address.  In ~/etc/dovecot/conf.d/10-ssl.conf~:
+
+    #+begin_src
+ # Default, this part is optional
+ssl_cert = </etc/letsencrypt/live/mail.default.com/fullchain.pem
+ssl_key = </etc/letsencrypt/live/mail.default.com/privkey.pem
+
+# mail.example.com
+local_name mail.example.com {
+    ssl_cert = </etc/letsencrypt/live/mail.example.com/fullchain.pem
+    ssl_key = </etc/letsencrypt/live/mail.example.com/privkey.pem
+}
+
+# mail.example2.net
+local_name mail.example2.net {
+    ssl_cert = </etc/letsencrypt/live/mail.example2.net/fullchain.pem
+    ssl_key = </etc/letsencrypt/live/mail.example2.net/fullchain.pem
+}
+    #+end_src
+
+    Reload dovecot and you should be good to go.
