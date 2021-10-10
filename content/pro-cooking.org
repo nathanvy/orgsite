@@ -1,6 +1,6 @@
 * PRO AT COOKING
   #+html:<span class="green">
-  June 2021
+ 27 June 2021
   #+html:</span>
   For the uninitiated:  https://www.youtube.com/watch?v=uYwvfxWF460
   

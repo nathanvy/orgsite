@@ -1,20 +1,27 @@
 * Blogging with Org-Mode and GNU Make
   #+html:<span class="green">
-  January 2021
+12 January 2021
   #+html:</span>
+
+*** Update Oct 2021
+    [[https://news.ycombinator.com/item?id=28818829][This article]] was trending on Hacker News this morning and the response has been interesting.  I don't work in that field but I find as an outside observer and HTML hobbyist that the JavaScript Front-end space tends toward absurd over-complication and unnecessary over-engineering of solutions.
+
+*** The problem
+     I wanted a simple webspace where I could write a combination blog/personal notebook to collect articles about things I wanted to refer back to and just stuff that I found interesting.  I tried a lot of prefab CMSes and static site generators:
+     
 - picoCMS
 - Jekyll
 - Coleslaw
+- Hugo
 - Frog
 - Luapress
 - Gatsby
-- The horrid one built in to ~org-export~
+- The one built in to ~org-export~
 
-
- I tried and failed to find a static or minimally-dynamic site generator/content management system.  Most of them were over-engineered for my use case, or else required me to learn some new templating language, or were very opinionated about themes and layouts, or else included shitloads of javascript.  Don't get me wrong,  most of the above list are some quality software projects and it's not that they're /bad software/, per se, it\s just that I had in mind a very specific design for this blog and I very quickly realized that even the "minimalist" themes on some of these site generators were sufficiently complex that paring them back would have been a major project in its own right.
+ I tried and failed to find a static or minimally-dynamic site generator/content management system that worked for me.  Most of them were over-engineered for my use case, or else required me to learn some new templating language, or were very opinionated about themes and layouts, or else included shitloads of javascript.  Don't get me wrong,  most of the above list are some quality software projects and it's not that they're /bad software/, per se, it's just that I had in mind a very specific design for this blog and I very quickly realized that even the "minimalist" themes on some of these site generators were sufficiently complex that paring them back would have been a major project in its own right.
 
 *** The inevitable outcome
-    Just as any sufficiently-complex C or Fortran program contains a slow, bug-ridden, informally-specified implementation of half of Common Lisp, I feel like the inevitable conclusion of the search for a static site generator means you end up just writing your own.
+    Just as any sufficiently-complex C or Fortran program contains a slow, bug-ridden, informally-specified implementation of half of Common Lisp, I suppose that the inevitable conclusion of the search for a static site generator means you end up just writing your own.
 
     In my case, my criteria were simple.
 
@@ -24,22 +31,22 @@
     4. Ideally composable within org-mode
 
 
-    It turns out that nothing really meets these criteria except possibly ~org export~, which is built in to org-mode and is frankly awful.  I'm a smart guy but I spent two days trying to figure out how to customize it to my liking and could not.  The documentation is... lacking, to put it mildly.
+    It turns out that nothing really meets these criteria except possibly ~org export~, which is built in to org-mode and is very complicated.  The default export has individually-numbered IDs for each div and all kinds of boilerplate.  I'm a smart guy but I spent two days trying to figure out how to customize it to my liking and I gave up because it was too much work.  The documentation is woefully lacking, to put it mildly.
 
 *** The Setup
-    I have a *content/* folder in the project root where the Makefile lives.  Within the content folder are all the articles I write, and subfolders for CSS and JavaScript.  The workflow is as simple as I could make it and depends mostly on the [[https://man7.org/linux/man-pages/man1/cat.1.html][cat(1)]] and [[https://linux.die.net/man/1/rsync][rsync(1)]] utilities.
+    I have a ~content/~ folder in the project root where the Makefile lives.  Within the content folder are all the articles I write, and subfolders for CSS and JavaScript.  The workflow is as simple as I could make it and depends mostly on the [[https://man7.org/linux/man-pages/man1/cat.1.html][cat(1)]] and [[https://linux.die.net/man/1/rsync][rsync(1)]] utilities.
 
 *** Concatenating for fun and profit
-    I felt like my ideal case was having org mode shit out just an html snippet, i.e. not an entire web page, and then concatenating that with a header and footer that I would write myself.  For the life of me I could not get this to work using org mode, so I turned to pandoc instead.  My process is simple:
+    I felt like my ideal case was having org mode shit out just an html snippet, i.e. not an entire web page, and then concatenating that with a header and footer that I would write myself.  I gave it the good old college try, but for the life of me I could not get this to work using org mode, so I turned to pandoc instead.  My process is simple:
 
-    1. Write the article in org-mode, which allows explicit inclusion of html tags and elements where required.
+    1. Write the article in org-mode, which allows explicit inclusion of html tags and elements where required.  I also write a ~.meta~ file which is just a few lines from the HTML header.
     2. Invoke [[https://pandoc.org/][Pandoc]] to translate org to html:
        #+begin_src
 $ pandoc input.org -o output.html
        #+end_src
-    3. Hand-craft a header and footer, concatenate all three together
+    3. Hand-craft a header and footer, then catenate it all together
        #+begin_src
-$ cat header.html output.html footer.html
+$ cat header.html article.meta output.html footer.html
        #+end_src
     4. Rsync everything to a server.
        #+begin_src
@@ -47,4 +54,4 @@ $ rsync -a --delete staging/ nathan@my.server.net:/home/bla/path/to/www/
        #+end_src
 
 
-    And that's it!  I do this whole site via this method.  The source code is [[https://github.com/nathanvy/orgsite][available on github]].
+    And that's it!  I do this whole site via this method, easily done via ~make-deploy~.  The source code is [[https://github.com/nathanvy/orgsite][available on github]].

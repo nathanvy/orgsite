@@ -5,7 +5,7 @@ CXXPRE=templates/prependix.html
 CXXMID=templates/prependix2.html
 CXXPOST=templates/appendix.html
 TARGETS=staging/index.html staging/csharp-emacs.html staging/ubiquiti.html staging/raspi.html staging/orgsite.html staging/pro-cooking.html \
-staging/postfix-dovecot-sni.html
+staging/postfix-dovecot-sni.html staging/hackrf.html staging/ipv6.html
 
 default: $(TARGETS)
 
@@ -33,4 +33,4 @@ deploy:
 	cp content/img/*.jpg staging/img/
 	mkdir -p staging/fonts
 	cp content/fonts/amiga4ever.ttf staging/fonts/
-	rsync -a --delete staging/ $(URI):/home/nathan/www/0x85.org 
+	rsync -a --delete staging/ $(URI)

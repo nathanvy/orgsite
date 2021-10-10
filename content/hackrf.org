@@ -1,0 +1,67 @@
+* Exploring the RF Spectrum with HackRF
+    #+html:<span class="green">
+  04 August 2021
+  #+html:</span>
+  I find electromagnetics/electrodynamics very hard to learn.  Not because the material is challenging (though it is definitely very challenging at times), but because the quality of the material you can find online is often very poor.  It's actually very hard to find good online resources that are accessible to people without Master's-level electrical engineering degrees.
+
+  All too often I find myself reading some web page written in 2003 by a Ham Radio guy who has been doing this stuff for 45 years, and the problem with that is more often than not these people have so much experience that they forget what it's like to be a novice, and their websites tend to quote formulas that are incomplete or have been made "more convenient".  For example if you're building a half-length dipole antenna, you're likely to run into the formula ~L = 468 / f~, which is infuriating because the "468" just floats there like some magical constant, dimensionless of course, and you just have to know that length, L, is in feet and frequency, f, is in Megahertz.  Why?  I guess because the Imperial system encourages this sort of surface-level understanding and rote memorization.  If you try to work backwards you'll find the math doesn't work because the 468 represents the real number, minus a few percentage points shaved off because of empirical results.  In other words, the 468 figure is just trivia and you can't work backwards from it and hope to learn anything of value.
+
+  Then you get into antenna theory, which at first glance seems like a bunch of foofy nonsense concocted to cover up the fact that RF engineers are actually warlocks practising Black Magic.  There's a wire, which is open at one end (i.e. an open circuit, so no current flows), but there's a wave inside the wire because Alternating Current.  Okay sure.
+
+  [[file:img/wayne.jpg]]
+  
+  This is the first in what will hopefully be a many-part series as I learn about RF shenanigans.
+
+*** Antenna Backgrounder
+    I find it useful to consider an antenna as a transducer that couples the end of the feed line to free space.  My [[https://greatscottgadgets.com/hackrf/][HackRF]] has one of those standard telescopic antennas you find on old FM radios, which looks like it ought to be half of a half-wave dipole antenna, thus making it a quarter-wave monopole.  The formula that includes the magic number 468 above is a simplified consequence of [[https://en.wikipedia.org/wiki/Maxwell's_equations][Maxwell's Equations]] which I won't get into here because other people have done better treatments of the subject and typing multivariate calculus on the computer is a pain.
+
+    The output amplifier produces a sinusoid and essentially juggles the electrons up and down the feed line.  The antenna works because it resonates when its length corresponds to the resonant frequency of the signal.  The exact length depends on the length:diameter ratio of the conductor, the dielectric constant of the surrounding medium, the height above ground, and the dielectric constant and conductivity of the ground. If you know all of those, then you can model the dipole as a boundary-value problem.
+
+    In general, the equation ~c = fλ~ holds, where ~f~ is the signal frequency, ~λ~ its wavelength, and ~c~ is the speed of light (in the surrounding material).  For hobbyist purposes it's enough to just use ~c = 3 x 10^8 m/s~ because the difference ends up being negligible and only barbarians use Imperial units.  The electrons, jiggling back and forth as they do, by definition undergo a series of accelerations which, thanks to Maxwell's Equations, induce an electromagnetic field which allows the signal to propagate.  The signal radiates in a pattern dependent on the antenna's gain, which is a measure of the antenna's directional sensitivity.
+
+    Related is the effective aperture of the antenna, which is more or less the amount of energy the antenna captures from the incident EM wave.  Effective aperture is inversely correlated with frequency squared, which makes intuitive sense:  For a given frequency and a given incident power density,  a quarter-wave antenna will have a certain area planar to the incident wave.  For a frequency ten times greater, the quarter-wave antenna will have ten times less area and thus capture less energy by virtue of being smaller.
+
+    If you know the gains of the tx and rx antennas, as well as the transmit power then you can calculate the power received by the receiving antenna:
+
+    #+begin_src
+P_r = P_t + G_t + G_r + ( lambda / 4 * pi * R )^2
+
+      where:
+      P_r    = Power received, dB
+      P_t    = Power transmitted, dB
+      G_r    = Receiver gain, dB
+      G_t    = Transmitter gain, dB
+      lambda = wavelength of the signal
+      R      = distance between the stations, meters
+
+    #+end_src
+
+    This turns out to be useful when calculating link budgets for data transmission, which I hope to come back to in a future post about LoRa.  Anyways, moving on:
+   
+*** Marine VHF
+    [[https://www.canada.ca/en/environment-climate-change/services/weatheradio/find-your-network/british-columbia.html][Environment Canada]] maintains a bunch of narrowband FM transmitters that they call "Weatheradio", similar to the American NOAA National Weather Radio service.  My nearest transmitter is broadcasting on 162.525 MHz, so the wavelength should be about 1.85 metres (they call it the "two metre band" for a reason) and the theoretically-ideal length of my antenna is therefore about 46 cm, easily doable with the telescopic ANT-500.
+    
+    [[file:img/2-metre-band.png]]
+    
+    In Canada the Marine VHF band is from 156 to 174 MHz, which includes the Weatheradio service.  Most stations broadcast narrowband FM with 25 kHz channel spacing (though there's an ongoing transition to 12.5 kHz spacing as technology improves).  I live on Vancouver Island where there's a fair amount of marine traffic but for this experiment at least I'll be focusing on Weatheradio at 162.525 MHz.
+
+*** Enter HackRF
+    The HackRF is an awesome piece of kit, and it functions as a half-duplex software-defined radio for anywhere from 1 MHz to 6 GHz, an impressive chunk of the spectrum for a $350 radio.  Support for the hardware is via the ~osmocom~ or ~soapysdr~ libraries.  I chose to use osmocom, and there's a ~gr-osmosdr~ package that enables osmocom source/sink blocks in GNUradio Companion that will interface with the hackrf.
+
+    [[file:img/hackrf.png]]
+
+    Unlike, say, the USRP which has just a single gain setting to fiddle with, the hackrf has three parameters:
+    - RF Gain
+    - IF Gain
+    - BB Gain
+
+      
+    It took me quite a while to figure out what exactly these are for and what they do, so I'll reproduce it here.
+
+    *RF Gain* is for the separate tx/rx amplifiers near the antenna, and has only an 'off'/0 dB setting and an 'on'/+14 dB setting.
+
+    *IF Gain*, which I believe stands for "intermediate frequency gain", controls the tx/rx LNA or "low noise amplifier" on the MAX2837 chip and goes from 0 to 40 dB for rx and 0 to 47 dB for tx.  The IF stage is where the incoming signal is multiplexed with the local oscillator signal.
+
+    Lastly, *BB Gain* or Baseband Gain is the gain control for the baseband stage, a receive-only amplifier that occurs in the MAX2837 immediately before the raw IQ signal is sent to the ADC for conversion to digital samples which are from there sent on to the host computer.
+
+    Using gqrx I was able to tune into the weather radio signal, but I wanted something 

@@ -1,6 +1,6 @@
 * Server Name Indication (SNI) in Dovecot and Postfix
   #+html:<span class="green">
-  July 2021
+  16 July 2021
   #+html:</span>
   A while back I decided that I would progressively de-Google my online life.  As part of that I have set up my own email server on this domain (0x85.org) and naturally that involved installing ~dovecot~, an IMAP server, and ~postfix~, a Mail Transfer Agent (MTA) that speaks SMTP.  It's actually quite daunting because there are an awful lot of moving parts that have to work /just so/ for mail to be delivered into the big providers' networks.
 
@@ -14,7 +14,9 @@ Postfix supports SNI as of 3.4.0:  http://www.postfix.org/announcements/postfix-
 
 Dovecot also supports SNI: https://doc.dovecot.org/configuration_manual/dovecot_ssl_configuration/
 
-Let's see how this goes together.
+And on top of that it seems most modern mail clients also support SNI (at least the important ones like mutt and Thunderbird and Apple's Mail.app do)
+
+Let's see how this all goes together.
 
 *** Postfix
 

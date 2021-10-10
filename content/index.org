@@ -6,6 +6,12 @@
   This is a living notebook, kinda like a /zettelkasten/ but without the hype.  You might encounter broken links and spelling mistakes because I'm always updating and editing.
 
 * ARTICLES:
+** October 2021
+   #+html:<span class="mt0">
+*** [[file:ipv6.html][IPv6 Prefix Delegation on the EdgeRouter X]]
+    #+html:</span>
+    Setting up IPv6 Prefix Delegation on the Ubiquiti EdgeRouter X SFP, on my fibre-to-the-home connection from Telus.
+    
 ** July 2021
    #+html:<span class="mt0">
 *** [[file:postfix-dovecot-sni.html][Server Name Indication (SNI) in dovecot and postfix]]

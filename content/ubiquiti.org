@@ -1,6 +1,6 @@
 * UniFi-cation
     #+html:<span class="green">
-  October 2020
+19 October 2020 
   #+html:</span>
   I recently moved to a new city for work, and our new home is about the same square footage but it's on fewer floors (only one loft upstairs, no basement, just a crawlspace) so our main level is quite a bit larger than our previous place in Ontario. I happen to have Fibre-to-the-home (FTTH) from Telus here, and the fibre line comes in from the street in the front corner of the house. That means, using the shitty Telus-provided wifi router, we couldn't get signal to the entire house and certainly not on the back patio where I want to be able to work when the weather is nice. This article documents some of the hurdles I had to overcome to take my wifi to the next level. Shout-out to my brother for invaluable assistance!
 
@@ -8,7 +8,7 @@
   In general, fibre networks require an Optical Network Terminal (ONT) to actually interface with the network, which is perhaps analogous to a modem for DSL or cable setups. Then you need a router and a switch. If you want wireless you need wifi access point(s). Most ISPs give you an all-in-one box that does a reasonable job of doing all these things. In my particular case the tech's only solution was to install a "wifi booster" that essentially didn't work at all.
 
 *** My setup
-  The UniFi access points require a device to be running their Controller software. I happened to have an old PC Engines APU2 single-board computer lying around with OpenBSD on it. I'm pretty much done with OpenBSD these days so I replaced it with Debian instead, with the intention that this little machine will run the unifi controller and some other misc utilities like a local DNS server, a wireguard gateway, etc. I briefly toyed with buying an Ultimate Dream Machine Pro which can do routing, firewall, and run the controller, until I realized that *you need a ubiquiti online account to use the UDM Pro!* Fuck that. Since I actually give a shit about privacy, the UDM Pro is not an option for me.
+  The UniFi access points require a device to be running their Controller software. I happened to have an old PC Engines APU2 single-board computer lying around with OpenBSD on it. I'm pretty much done with OpenBSD these days so I replaced it with Debian instead, with the intention that this little machine will run the unifi controller and some other misc utilities like a local DNS server, a wireguard gateway, etc. I briefly toyed with buying an Ultimate Dream Machine Pro which can do routing, firewall, and run the controller, until I realized that *you need a ubiquiti online account to use the UDM Pro!* Fuck that. Since I feel quite strongly about privacy, it seems the UDM Pro is not an option for me.
 
   Fortunately, Telus' all-in-one box isn't an ONT in and of itself—the optical line goes into a small SFP transceiver module and it's that little module that actually acts as the ONT. That means I was able to purchase the (much cheaper) EdgeRouter in lieu of a UDM Pro.
 
@@ -22,9 +22,9 @@
   The fibre line coming from the street goes into the SFP+ module, into the EdgeRouter, and from there I ran Ethernet through my crawlspace and up through a hole the previous owner drilled into the floor to put one Access Point on each end of the house, which so far gives good coverage.
 
 *** Obstacle 1
-  There's an allegedly-functional UniFi controller package in the OpenBSD ports tree but it appears to be broken, or at least I couldn't get it to install. I opted instead to switch to Debian which is pretty much the de facto standard Linux these days, and there are .deb packages for just about everything. Unfortunately Debian doesn't have a very ergonomic headless install procedure, and their website recommends with a straight face that you create a preseeded installer to automatically install the OS, boot it up with sshd running, and hope you can ssh in.
+  There's an allegedly-functional UniFi controller package in the OpenBSD ports tree but it appears to be broken, or at least I couldn't get it to install. I opted instead to switch to Debian which is pretty much the /de facto/ standard Linux these days, and there are .deb packages for just about everything. Unfortunately Debian doesn't have a very ergonomic headless install procedure, and their website recommends with a straight face that you create a preseeded installer to automatically install the OS, boot it up with sshd running, and hope you can ssh in.  Sheesh.
 
-  Thankfully the APU2 has a serial port, so with a handy USB-to-RS232 adaptor and ~minicom~ running on my [[https://liliputing.com/2017/09/really-retro-thinkpad-x62-t70-mods-put-modern-specs-old-laptop-cases.html][ThinkPad T70]] I was able to get a serial console running to interact with the APU.
+  Thankfully the APU2 has a serial port, so with a handy USB-to-RS232 adapter and ~minicom~ running on my [[https://liliputing.com/2017/09/really-retro-thinkpad-x62-t70-mods-put-modern-specs-old-laptop-cases.html][ThinkPad T70]] I was able to get a serial console running to interact with the APU.
 
   Some notes in case Google sends you here looking for help:
 
@@ -63,7 +63,7 @@
   # apt purge openjdk-11*
 #+end_src
 
-  Then, I had to find a suitable version of Java 8 to install. Most of the dickheads on StackOverflow are recommending that you basically just upgrade to sid, the unstable stream of Debian, in order to get Java 8 which is inexplicably packaged there but not in stable. I'm not going to upgrade 1500 packages and then deal with daily churn just to get Java 8. It turns out that when Oracle started fucking with the license in Java 11, a bunch of Java Users' Group folks created AdoptOpenJDK which among other things has old versions available.
+  Then, I had to find a suitable version of Java 8 to install. Most of the answers on StackOverflow are recommending that you basically just upgrade to sid, the unstable stream of Debian, in order to get Java 8 which is inexplicably packaged there but not in stable. I'm not going to upgrade 1500 packages and then deal with daily churn just to get Java 8. The good news, as it turns out, is that when Oracle started messing with the license in Java 11, a bunch of awesome Java Users' Group folks created AdoptOpenJDK which among other things has old versions available!
 
   So I installed that as per the instructions on their webpage and had to resolve what appears to be a common issue when folks try to install unifi on Debian:
 
@@ -73,7 +73,7 @@
   netmon unifi.init[5223]: Starting Ubiquiti UniFi Controller: unifiCannot locate Java Home
 #+end_src
 
-  The unifi init script doesn't know to look for AdoptOpenJDK installs, so it was necessary to patch the set_java_home() function by adding:
+  The unifi init script doesn't know to look for AdoptOpenJDK installs, so it was necessary to patch the ~set_java_home()~ function by adding:
 
   #+begin_src
   #adoptopenjdk
@@ -101,6 +101,6 @@
   After enabling NAT and IPSec offloading I was getting download speeds in the 950 Mbps range!
 
 *** February 2021 update:  Connection Dropping
-    The final challenge was debugging a strage issue where the connection would seemingly drop.  I'd lose all connectivity, but the Edgerouter would seem to be fine.  It just seemed to stop routing outbound packets, inexplicably.  There was nothing inciriminating in the logs that I could find.  It would happen usually when the Edgerouter was under load, but sometimes just randomly in the middle of the night.  Some times it would happen twice in a day, other times it would go for a month without problem, but always the issue would return, and the only way to fix it was to power-cycle the edgerouter.
+    The final challenge was debugging a strange issue where the connection would seemingly drop.  I'd lose all connectivity, but the Edgerouter would seem to be fine.  It just seemed to stop routing outbound packets, inexplicably.  There was nothing incriminating in the logs that I could find.  It would happen usually when the Edgerouter was under load, but sometimes just randomly in the middle of the night.  Some times it would happen twice in a day, other times it would go for a month without problem, but always the issue would return, and the only way to fix it was to power-cycle the edgerouter.
 
     Eventually I gave in and installed a *tp-link MC220L* media converter to accept the SFP ONT and run ethernet out to the edgerouter's WAN port.  At the time of writing it's been chugging along for about 2 months without issue now.  Problem solved?

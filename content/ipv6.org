@@ -1,0 +1,102 @@
+* IPv6 Prefix Delegation from Telus on a Ubiquiti EdgeRouter
+  #+html:<span class="green">
+  03 Oct 2021
+  #+html:</span>
+  I recently moved to a new city for work (yes, again.  I hate moving.) and I decided that I would finally get around to setting up a proper wireguard VPN between my various beaglebones, [[file:raspi.html][raspberry pis]], thinkpads, and the server that this website runs on.  I have fibre to the home from Telus (they call their product "PureFibre") and my home network setup is detailed [[file:ubiquiti.html][elsewhere on this blog]]]].  As a precursor to getting everything running on wireguard, I wanted to get all my devices set up with globally-routable IPv6 addresses.  Most of the IPv6 tutorials out there cover the addressing and subnetting schemes and then stop short, so I had a lot of learning to do.  I will regurgitate most of that here in the hopes it will help someone else.
+
+  Note that I will implicitly refer a lot to the RFCs, so if you are confused you should read them.
+
+*** TELUS
+First of all, from lots of googling I discovered that Telus will happily delegate you a ~/56~ subnet via DHCP Prefix Delegation.  It turns out that Telus' routers, probably due to whatever security policy they have in place, do not want to receive an ~IA_NA~ (they don't use that feature) as part of the solicit message.  If your solicit message includes ~IA_NA~ then there will be a ~NoAddrAvail~ message in the DHCP Advertise emssage and a lot of 3rd-party equipment will shit its pants when this happens.  So my edgerouter needed to be configured to only send an ~IA_PD~ in the solicit message.
+
+My EdgeRouter happens to be set up with ~eth4~ as the WAN port, so it was a matter of logging in to the router via ~ssh~ and issuing the following:
+
+#+begin_src
+$ configure
+# set interfaces ethernet eth4 dhcpv6-pd rapid-commit enable
+# set interfaces ethernet eth4 dhcpv6-pd pd 0
+# set interfaces ethernet eth4 dhcpv6-pd pd 0 prefix-length 56
+# set interfaces ethernet eth4 dhcpv6-pd pd 0 interface switch0 prefix-id :0
+# set interfaces ethernet eth4 dhcpv6-pd pd 0 interface switch0 service slaac
+# set interfaces switch switch0 ipv6 dup-addr-detect-transmits 1
+# set interfaces switch switch0 ipv6 router-advert managed-flag true
+# set interfaces switch switch0 ipv6 router-advert prefix ::/64
+# commit
+#+end_src
+
+*** Firewall
+Since IPv6 global addresses are theoretically routable from anywhere on the internet, it's wise to set up firewalling since we can't hide behind NAT any more.  There are dozens of example configs floating around, but a common starting point is the following:
+
+#+begin_src
+# set firewall ipv6-receive-redirects disable
+# set firewall ipv6-src-route disable
+# set firewall ipv6-name WAN6_IN default-action drop
+# set firewall ipv6-name WAN6_IN description "IPv6 packets from the internet to LAN and WAN"
+# set firewall ipv6-name WAN6_IN enable-default-log
+# set firewall ipv6-name WAN6_IN rule 10 action accept
+# set firewall ipv6-name WAN6_IN rule 10 state established enable
+# set firewall ipv6-name WAN6_IN rule 10 state related enable
+# set firewall ipv6-name WAN6_IN rule 10 description "Allow established and related packets"
+# set firewall ipv6-name WAN6_IN rule 20 action drop
+# set firewall ipv6-name WAN6_IN rule 20 log enable
+# set firewall ipv6-name WAN6_IN rule 20 state invalid enable
+# set firewall ipv6-name WAN6_IN rule 20 description "Drop invalid packets"
+# set firewall ipv6-name WAN6_IN rule 30 action accept
+# set firewall ipv6-name WAN6_IN rule 30 log enable
+# set firewall ipv6-name WAN6_IN rule 30 protocol icmpv6
+# set firewall ipv6-name WAN6_IN rule 30 description "Allow ICMPv6 packets"
+# set firewall ipv6-name WAN6_LOCAL default-action drop
+# set firewall ipv6-name WAN6_LOCAL description "IPv6 packets from internet to router"
+# set firewall ipv6-name WAN6_LOCAL enable-default-log
+# set firewall ipv6-name WAN6_LOCAL rule 10 action accept
+# set firewall ipv6-name WAN6_LOCAL rule 10 state established enable
+# set firewall ipv6-name WAN6_LOCAL rule 10 state related enable
+# set firewall ipv6-name WAN6_LOCAL rule 10 description "Allow established and related packets"
+# set firewall ipv6-name WAN6_LOCAL rule 20 action drop
+# set firewall ipv6-name WAN6_LOCAL rule 20 log enable
+# set firewall ipv6-name WAN6_LOCAL rule 20 state invalid enable
+# set firewall ipv6-name WAN6_LOCAL rule 20 description "Drop invalid packets"
+# set firewall ipv6-name WAN6_LOCAL rule 30 action accept
+# set firewall ipv6-name WAN6_LOCAL rule 30 log enable
+# set firewall ipv6-name WAN6_LOCAL rule 30 protocol icmpv6
+# set firewall ipv6-name WAN6_LOCAL rule 30 description "Allow ICMPv6 packets"
+# set firewall ipv6-name WAN6_LOCAL rule 40 action accept
+# set firewall ipv6-name WAN6_LOCAL rule 40 description "allow DHCPv6 client/server"
+# set firewall ipv6-name WAN6_LOCAL rule 40 destination port 546
+# set firewall ipv6-name WAN6_LOCAL rule 40 source port 547
+# set firewall ipv6-name WAN6_LOCAL rule 40 protocol udp
+# set interfaces ethernet eth4 firewall in ipv6-name WAN6_IN
+# set interfaces ethernet eth4 firewall local ipv6-name WAN6_LOCAL
+# commit
+#+end_src
+
+*** Addressing
+    Once that's all said and done I waited a few minutes and sure enough the router received an IPv6 address on the ~switch0~ interface.  It's worth noting that many of the guides out there state that you should be seeing two addresses; one on the WAN port and one on the LAN port.  I have not observed this to be the case and it's not clear to me why this is so.  However it was easy to confirm that my router now has a v6 address in the global space:
+
+    #+begin_src
+admin@ubnt:~$ ip addr
+[...]
+10: switch0@itf0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
+    link/ether 74:83:c2:48:4e:17 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.1.1/24 brd 192.168.1.255 scope global switch0
+       valid_lft forever preferred_lft forever
+    inet6 2001:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx/64 scope global
+       valid_lft forever preferred_lft forever
+    inet6 fe80::7683:c2ff:fe48:4e17/64 scope link
+       valid_lft forever preferred_lft forever
+    #+end_src
+
+    As well, I could transact over v6 from my laptop and other devices:
+
+    #+begin_src
+➜  ~ ping6 -c 4 google.com
+PING6(56=40+8+8 bytes) 2001:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx --> 2607:f8b0:400a:805::200e
+16 bytes from 2607:f8b0:400a:805::200e, icmp_seq=0 hlim=118 time=8.830 ms
+16 bytes from 2607:f8b0:400a:805::200e, icmp_seq=1 hlim=118 time=10.739 ms
+16 bytes from 2607:f8b0:400a:805::200e, icmp_seq=2 hlim=118 time=9.442 ms
+16 bytes from 2607:f8b0:400a:805::200e, icmp_seq=3 hlim=118 time=9.899 ms
+
+--- google.com ping6 statistics ---
+4 packets transmitted, 4 packets received, 0.0% packet loss
+round-trip min/avg/max/std-dev = 8.830/9.728/10.739/0.696 ms
+    #+end_src

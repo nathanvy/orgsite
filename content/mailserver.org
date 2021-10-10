@@ -1,0 +1,82 @@
+#+options: toc:3
+* Setting up Debian 10 Buster as a mail server in 2021
+  I'm gradually de-googling my life.  As time goes on we see (such as with Zuckerberg using Signal on his personal phone instead of Whatsapp, which Facebook owns) that the CEOs of Big Tech say one thing but do another.  They by their actions tacitly confirm that they know their products are harmful, and by "their products" I mostly mean social media and other data pipelines.
+
+  The Hacker News crowd hates email, for what I feel tend to be really silly reasons.  The only possible critique of email is that the security model is broken.  You can't really have a PGP-secured conversation and expect it to remain secure because:
+
+    a. Someone's bound to hit Reply All, or CC someone, and accidentally either forget to encrypt, or else they'll have quoted private content; and
+    b. Most people use GnuPG, which is full of arcane legacy code no doubt filled with 0days and the GNU people can't seem to get their act together on security-related matters.
+
+    I still like email, though.  If I need to secure my conversations I'm perfectly happy making initial contact over email and then moving to a different medium.  Email is ubiquitous, standardized, and most importantly it's not some fucking social media company's proprietary walled garden /a la/ Facebook Messenger or Google Hangouts.  Unfortunately, email is not without its warts.  There are too many legacy concepts still floating around.
+    
+  In any case, one step at a time, I am divesting myself of services such as gmail.  Here's the problem:  There are 2092384029384 postfix+dovecot guides out there and many of them don't work.  I know because I've tried following at least 7 different guides and none worked.  This blog is as much my personal notebook as it is a blog, and so this article will serve as an aide-memoire for myself just as much as a tutorial for anyone else who comes along searching.  If you end up here, be advised this article is only valid for Debian 10 and if I fail to update it you might go off the edges of the map where there be demons.  
+
+  Here's what we're going to cover:
+  
+  [TABLE-OF-CONTENTS]
+
+*** The Alphabet Soup
+    - MTA:  Mail Transfer Agent, software that transfers mail.  I'll be using postfix as the MTA for this setup.  MTAs are not to be confused with...
+    - MDA:  Mail Delivery Agent, software that delivers mail.  Why these two concepts were ever separated in the first place baffles me. Surely the act of placing email in my mbox file in 1979 still counts as an act of /transferring mail/, right?  Anyways, I'll be using dovecot for mail delivery.
+    - MUA:  Mail User Agent, software for users to actually read/write mail and then hand it off to MTAs and MDAs.  Examples include Thunderbird, Outlook, Mail.app, roundcube, horde, mutt, pine, etc.
+
+*** TLS/SSL
+    The EFF's ~certbot~ package is infinitely superior and more convenient than a self-signed certificate.  However it is necessary to add a post-renewal hook to ~/etc/letsencrypt/cli.ini~ as such:
+
+    #+begin_src
+post-hook = systemctl reload nginx; systemctl reload dovecot; systemctl reload postfix;
+    #+end_src
+
+    That way, they'll pick up the renwed certificates.
+    
+*** DNS
+    Ensure that your DNS is set properly.  I set MX records for, in my case, *nathan.pro* and ensured that they aren't proxied through e.g. cloudflare.  Ensure reverse dns lookup works:
+
+    #+begin_src
+➜  ~ dig -x 12.34.56.78
+
+; <<>> DiG 9.10.6 <<>> -x 12.34.56.78
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 38925
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+;; QUESTION SECTION:
+;78.56.34.12.in-addr.arpa.	IN	PTR
+
+;; ANSWER SECTION:
+78.56.34.12.in-addr.arpa. 86400 IN	PTR	myserver.nathan.pro.
+
+;; Query time: 81 msec
+;; SERVER: 192.168.1.1#53(192.168.1.1)
+;; WHEN: Wed Apr 07 22:18:24 PDT 2021
+;; MSG SIZE  rcvd: 83
+    #+end_src
+    
+*** Postfix, for SMTP
+    [[https://postfix.org][Postfix]] is billed as a "Secure Mail Transfer Agent" which handles actually sending and receiving mail.  Setting up postfix is actually rather straightforward and I never had a problem, in all my prior attempts, with postfix.  I was always able to use the unix ~mail~ command to send from the command line to my gmail account and back.  Postfix is packaged in ~apt~ so:
+
+    #+begin_src
+# apt install postfix
+# cat /var/log/mail.log (to see if it ran properly)
+    #+end_src
+
+    Couple of caveats.  Postfix distinguishes between different types of domains, or different classes of domains.  Postfix's ~mydestination~ variable, confusingly, is for specifying which domains you consider local.  However what ISPs do is to specify hosted domains, sometimes referred to as virtual domains.  You can specify them in a giant-ass text file if you want, but I'll be using MySQL (which is apparently now called MariaDB).
+
+    Postfix operates on mappings of email addresses and domains.  Domains are mapped to arbitary values (because apparently postfix doesn't just look at lists??) but email addresses are mapped to locations on disk (i.e. a maildir or an mbox).
+
+*** Dovecot, for IMAP
+    [[https://dovecot.org][Dovecot]] provides IMAP and mail delivery.  Install it with
+
+    #+begin_src
+# apt install dovecot-imapd
+    #+end_src
+
+    There's also a ~dovecot-pop3d~ but I'm not interested in using POP3.  Dovecot requires what I consider to be a lot of configuration, so let's dive in.  First, tell dovegot to expect maildir rather than mbox, in */etc/dovecot/conf.d/10-mail.conf*, noting that *%n* is a wildcard for the user in *user@domain.tld*:
+
+    #+begin_src
+mail_location = maildir:/home/%n/Maildir
+    #+end_src
+    

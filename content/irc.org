@@ -1,0 +1,10 @@
+* Using IRC in 2021 on a smartphone
+
+*** fgsfds
+    - weechat in tmux
+    - pushbullet
+    - weebullet
+      - https://gist.github.com/miblodelcarpio/20da48bcdfb55c0860c44fd42d1b9647
+      - https://iamkelv.in/blog/2017/08/weechat.html
+    - inactive_only in weebullet
+    - weechat-android relay client
