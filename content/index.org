@@ -6,6 +6,12 @@
   This is a living notebook, kinda like a /zettelkasten/ but without the hype.  You might encounter broken links and spelling mistakes because I'm always updating and editing.
 
 * ARTICLES:
+** August 2022
+    #+html:<span class="mt0">
+*** [[file:sbcl-timers.html][SBCL Timers]]
+    #+html:</span>
+    Notes to self regarding a gotcha in SBCL's implementation for the next time I try to mess around with Common Lisp timers.
+    
 ** October 2021
    #+html:<span class="mt0">
 *** [[file:ipv6.html][IPv6 Prefix Delegation on the EdgeRouter X]]

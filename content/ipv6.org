@@ -7,7 +7,7 @@
   Note that I will implicitly refer a lot to the RFCs, so if you are confused you should read them.
 
 *** TELUS
-First of all, from lots of googling I discovered that Telus will happily delegate you a ~/56~ subnet via DHCP Prefix Delegation.  It turns out that Telus' routers, probably due to whatever security policy they have in place, do not want to receive an ~IA_NA~ (they don't use that feature) as part of the solicit message.  If your solicit message includes ~IA_NA~ then there will be a ~NoAddrAvail~ message in the DHCP Advertise emssage and a lot of 3rd-party equipment will shit its pants when this happens.  So my edgerouter needed to be configured to only send an ~IA_PD~ in the solicit message.
+First of all, from lots of googling I discovered that Telus will happily delegate you a ~/56~ subnet via DHCP Prefix Delegation.  It turns out that Telus' routers, probably due to whatever security policy they have in place, do not want to receive an ~IA_NA~ (they don't use that feature) as part of the solicit message.  If your solicit message includes ~IA_NA~ then there will be a ~NoAddrAvail~ message in the DHCP Advertise message and a lot of 3rd-party equipment will shit its pants when this happens.  So my edgerouter needed to be configured to only send an ~IA_PD~ in the solicit message.
 
 My EdgeRouter happens to be set up with ~eth4~ as the WAN port, so it was a matter of logging in to the router via ~ssh~ and issuing the following:
 

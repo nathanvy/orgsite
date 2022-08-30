@@ -158,9 +158,20 @@ code {
 }
 
 .content {
-    max-width: 650px;
     margin: 0 auto;
     font-size: 1.25rem;
+}
+
+@media (min-width: 600px){
+    .content {
+	display: flex;
+    }
+
+    .column {
+	padding-left: 6rem;
+	padding-right: 6rem;
+    }
+
 }
 
 .content p {
@@ -171,9 +182,6 @@ code {
     margin-left: auto;
     margin-right: auto;
     display: block;
-}
-
-.column {
 }
 
 .timestamp {

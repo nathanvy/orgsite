@@ -18,7 +18,8 @@
 - Gatsby
 - The one built in to ~org-export~
 
- I tried and failed to find a static or minimally-dynamic site generator/content management system that worked for me.  Most of them were over-engineered for my use case, or else required me to learn some new templating language, or were very opinionated about themes and layouts, or else included shitloads of javascript.  Don't get me wrong,  most of the above list are some quality software projects and it's not that they're /bad software/, per se, it's just that I had in mind a very specific design for this blog and I very quickly realized that even the "minimalist" themes on some of these site generators were sufficiently complex that paring them back would have been a major project in its own right.
+  
+I tried and failed to find a static or minimally-dynamic site generator/content management system that worked for me.  Most of them were over-engineered for my use case, or else required me to learn some new templating language, or were very opinionated about themes and layouts, or else included shitloads of javascript.  Don't get me wrong,  most of the above list are some quality software projects and it's not that they're /bad software/, per se, it's just that I had in mind a very specific design for this blog and I very quickly realized that even the "minimalist" themes on some of these site generators were sufficiently complex that paring them back would have been a major project in its own right.
 
 *** The inevitable outcome
     Just as any sufficiently-complex C or Fortran program contains a slow, bug-ridden, informally-specified implementation of half of Common Lisp, I suppose that the inevitable conclusion of the search for a static site generator means you end up just writing your own.

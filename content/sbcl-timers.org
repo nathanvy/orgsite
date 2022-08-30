@@ -1,0 +1,67 @@
+* The missing manual section for SBCL timers that I needed
+  #+html:<span class="green">
+  28 August 2022
+  #+html:</span>
+  Since about February of 2021 I've been slowly developing an algorithmic trading application in Common Lisp.  I don't use any of the so-called "algo platforms" and instead I wrote a simple REST client to talk to my brokerage's API, download the data I need, and crunch the numbers on my end.  My algorithm trades a variant of low-frequency statistical arbitrage which, in a nutshell, attempts to profit from mean-reverting properties of the market.  That is to say it does a fancy version of /buy low and sell high/.
+
+*** Lisp
+Lisp is pretty great because it's very flexible, but I'm not aware of any Lisps or Schemes that have big-time commercial backers the way Go or C# or Java do.  As a result the docs are merely okay.  I use the de-facto standard Common Lisp implementation which is [[https://sbcl.org][Steel Bank Common Lisp, aka SBCL]].
+
+*** Note to self: Timers
+Timers, in SBCL parlance, are programming constructs that let you schedule and defer actions.  The canonical example from the SBCL docs is:
+
+#+begin_src common-lisp
+  (schedule-timer (make-timer (lambda ()
+				(write-line "Hello, world")
+				(force-output)))
+		  2)
+#+end_src
+
+Okay so you spawn a timer object with ~make-timer~ and add it to some kind of global timer registry with ~schedule-timer~.  Seems straightforward enough.  The docs elaborate:
+
+#+begin_src
+  Function: schedule-timer [sb-ext] timer time &key repeat-interval absolute-p catch-up
+#+end_src
+
+Per the manual, this schedules ~timer~ to be triggered at ~time~, and if ~absolute-p~ then ~time~ is [[http://clhs.lisp.se/Body/f_get_un.htm#get-universal-time][universal time]], but non-integral values are also allowed, else ~time~ is measured as the number of seconds from the current time.  That's fine and all but if you try to actually inspect the timer objects as created:
+
+#+begin_src
+CL-USER> (schedule-timer (make-timer (lambda () (write-line "cooking MC's like a pound of bacon") (force-output))) 300)
+; No values
+CL-USER> (decode-universal-time (sb-impl::%timer-expire-time (car (list-all-timers))))
+1 (1 bit, #x1, #o1, #b1)
+53 (6 bits, #x35, #o65, #b110101)
+14 (4 bits, #xE, #o16, #b1110)
+6 (3 bits, #x6, #o6, #b110)
+3 (2 bits, #x3, #o3, #b11)
+1987 (11 bits, #x7C3)
+4 (3 bits, #x4, #o4, #b100)
+NIL
+8 (4 bits, #x8, #o10, #b1000)
+CL-USER> 
+#+end_src
+
+For clarity, the values returned from [[http://clhs.lisp.se/Body/f_dec_un.htm#decode-universal-time][decode-universal-time]] are, in order: second, minute, hour, date, month, year, day, daylight-p, and finally zone.
+
+So for those of us keeping score at home, because we did not supply ~absolute-p~ as ~t~, and because it defaults to ~nil~, then ~time~ should be relative to the current time.  However the ~year~ return is clearly not correct since 300 seconds from a random day in 2022 cannot be a day in 1987.  Is it to do with absolute time?
+
+#+begin_src
+  CL-USER> (schedule-timer (make-timer (lambda () (write-line "cooking MC's like a pound of bacon") (force-output))) (+ (get-universal-time) 300) :absolute-p t)
+; No values
+CL-USER> (decode-universal-time (sb-impl::%timer-expire-time (car (list-all-timers))))
+19 (5 bits, #x13, #o23, #b10011)
+3 (2 bits, #x3, #o3, #b11)
+7 (3 bits, #x7, #o7, #b111)
+9 (4 bits, #x9, #o11, #b1001)
+6 (3 bits, #x6, #o6, #b110)
+2000 (11 bits, #x7D0)
+4 (3 bits, #x4, #o4, #b100)
+T
+8 (4 bits, #x8, #o10, #b1000)
+CL-USER>
+#+end_src
+
+Uhhh, nope.
+
+*** Caveat lector
+Reader beware, I guess, that you can't depend on ~timer-expire-time~ to be a sane format.  Digging into the source code it appears to use an internal representation of "wall clock" time and unfortunately there's no easy way that I've yet come up with to fetch the scheduled expire-time of a given SBCL timer.
