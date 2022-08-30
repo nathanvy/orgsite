@@ -159,6 +159,8 @@ code {
 
 .content {
     margin: 0 auto;
+    max-width: 800px;
+    text-align: justify;
     font-size: 1.25rem;
 }
 
