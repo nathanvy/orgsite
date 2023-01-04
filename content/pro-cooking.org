@@ -15,4 +15,4 @@
 *** I'll Call It What It Is, Kyle...
     My philosophy in the kitchen is to go for full flavour.  If a dish is unhealthy, I'm not going to create a "healthier version" of it.  Some things that are delicious are just bad for us, and my personal philosophy is to simply  eat those things less often, and/or to eat them in smaller portions, rather than try to contort apple pie or fried chicken into something approaching health food.
     
-    In any case, here's the link: [[https://nathan.pro/index.html][PRO AT COOKING]]!
+    Originally I was going to make a separate site and use this same shitty CMS but I found it was easier to just use mediawiki.  In any case, here's the link: [[https://cook.0x85.org][PRO AT COOKING]]

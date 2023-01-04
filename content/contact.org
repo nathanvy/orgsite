@@ -1,0 +1,6 @@
+* CONTACT
+I can be reached via email at [[mailto:n@0x85.org][n@0x85.org]] and I promise I do read everything that gets sent my way.  I do not use PGP and have not for quite some time.  Any keys you might find on the keyservers are either expired, revoked, or impersonators.
+
+I am on [[https://twitter.com/vanwhy][twitter @vanwhy]].  When Elon Musk took over twitter I deleted all my tweets, but I still have the app installed and will respond to *@mentions* or DMs.
+
+I'm also [[https://github.com/nathanvy][on GitHub]].
