@@ -1,0 +1,70 @@
+* Howto: Multithreaded TCP Server in Common Lisp
+  #+html:<span class="green">
+ 15 September 2022
+  #+html:</span>
+  I recently decided to start doing the [[https://protohackers.com][Protohackers]] challenges (in addition to [[https://cryptopals.com][cryptopals]] which I'm already doing).  Whereas I'm doing cryptopals in C#, I decided I'd flex a different muscle and do Protohackers in Common Lisp.  I have never done any direct network programming before, which is to say all the programming I've done that touches networking (web scraping, IRC clients, etc.) has all been at a higher level of abstraction and I've never had to worry about this stuff.
+
+  Turns out that one or possibly both of the following are true:
+
+  A. Google search results suck these days, and
+  B. There seems to be a real dearth of tutorials for actual *multithreaded* servers.
+
+     
+  As a result I had to learn a lot from trial and error, so I've compiled what I learned here for future reference and in case anyone else stumbles upon it.
+
+*** The Smoke Test
+Problem 0, aka the Smoke Test, is a qualification of sorts.  The aspiring protocol hacker must write a TCP echo server that doesn't mangle binary and can handle up to 5 concurrent connections.  Let's do it.  We start by loading ~usocket~:
+
+#+begin_src lisp
+  (ql:quickload :usocket)
+#+end_src
+
+We can create a passive ("server") socket:
+
+#+begin_src lisp
+	(setf listener (usocket:socket-listen host
+					      port
+					      :reuse-address t
+					      :element-type '(unsigned-byte 8)))
+#+end_src
+
+And we will make a blocking call to ~wait-for-input~ which will return only when the list of sockets you feed it sees activity (which in our case means a new socket we can ~accept~):
+
+#+begin_src lisp
+  (usocket:wait-for-input listener :ready-only t)
+#+end_src
+
+And we'll write a function to handle I/O to and from the client.  Note that we won't be using ~read-line~ because it will block until it sees a newline character.  It's fine during testing because ~telnet~ sends ~0x0D 0x0A~ (Carriage Return, Line Feed) by default but we have no guarantees that the protohackers server will do so.  Thus if none of the bytes coming in are ASCII newline characters we'll block forever and fail the challenge.
+
+#+begin_src lisp
+  (defun handle-client (socket)
+    (let ((s (usocket:socket-stream socket))
+	  (recv (make-array 1 :fill-pointer 0 :element-type '(unsigned-byte 8))))
+      (loop for b = (read-byte s nil :eof)
+	    until (eq b :eof)
+	    do (vector-push-extend b recv))
+      (unless (zerop (length recv))
+	(loop for b across recv
+	      do (write-byte b s)))
+      (usocket:socket-close socket)))
+#+end_src
+
+*** Concurrency
+Normally we could just go ahead and call ~socket-accept~ to get a socket we can talk to but any time spent talking to the accepted socket is time we can't spend accepting new clients, so instead when we invoke our handler we'll spin it off into its own thread:
+
+#+begin_src lisp
+  (setf accepted (usocket:socket-accept client))
+
+  (sb-thread:make-thread
+   (lambda ()
+     (handle-client accepted)))
+#+end_src
+
+And that's the innards.  ~handle-client~ does all the real work, and all we need to do now is write a loop that will listen for connections via ~wait-for-input~, which returns a list of sockets that can be accepted, walk that list, and call ~socket-accept~ on each one.  After that we spawn a new thread and pass the ~accept~'ed client socket to a dedicated handler thread.
+
+*** Trade-offs
+There are other ways to do this.  One popular alternative is to eschew multithreading entirely, because for large numbers of connections you will quickly exhaust the number of threads that your OS will let you create.  The workaround is to have a single-threaded application that keeps all sockets (the listener and the clients) in a big list and just walk that list continually.
+
+When any socket on that list has activity you either ~socket-accept~ it or you ~handle-client~ it as appropriate.  Optionally you can still spin off some work into a new thread if it's processing-intensive but at that point you might as well make the whole thing multithreaded.
+
+The complete server (one which passes the Smoke Test) is available on my [[https://github.com/nathanvy/protohax][github repository]].

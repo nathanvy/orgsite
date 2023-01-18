@@ -8,6 +8,12 @@ This is a living notebook, kinda like a wiki but way more cumbersome to edit.  H
 [[file:contact.html][Contact Me]]
 
 * ARTICLES:
+** November 2022
+#+html:<span class="mt0">
+*** [[file:market2.html][Algorithmic Trading Series Part 2:  Validating Assumptions]]
+#+html:</span>
+Part 2 of a series on algorithmic trading, in which I examine some assumptions I made in part 1.
+
 ** September 2022
 #+html:<span class="mt0">
 *** [[file:multithreading.html][Multithreaded TCP Server in Common Lisp]]

@@ -1,8 +1,14 @@
+#+html:<span class="green">
+2023 Note:
+#+html:</span>
+In days of yore, getting C#/dotnet working in emacs with intellisense was a bit arcane because ~lsp-mode~ and ~eglot~ did not exist.  I updated this article in 2020 to reflect the new hotness, but with the upcoming changes anticipated to be in the Emacs 29 release, ~csharp-mode~ and ~tree-sitter~ will both be absorbed into emacs itself, and possibly ~eglot~ too, which will obviate this article almost in its entirety.  I'll leave it up for posterity but it will cease to be relevant unless you are running a pre-29 version of emacs.
+
 * Writing C# in Emacs
-  #+html:<span class="green">
+
+ #+html:<span class="green">
  06 December 2020
-  #+html:</span>
-  I contribute to an open source project written in C# that I helped port to dotnet core (and thus natively to mac and linux) and when I mentioned it recently on Hacker News [[https://news.ycombinator.com/item?id=23456407][I was asked to comment]] on my setup for writing C# on emacs, while still gaining the benefits of Intellisense-style code completion.
+ #+html:</span>
+  I contribute to an open source project written in C# that I helped port to dotnet core (and thus natively to mac and linux) and when I mentioned it recently on Hacker News I was asked to comment on my setup for writing C# on emacs, while still gaining the benefits of Intellisense-style code completion.
 
 *** The setup
     Writing C# in Emacs depends on just a handful of packages:

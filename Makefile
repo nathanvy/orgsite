@@ -6,7 +6,7 @@ CXXMID=templates/prependix2.html
 CXXPOST=templates/appendix.html
 TARGETS=staging/index.html staging/csharp-emacs.html staging/ubiquiti.html staging/raspi.html staging/orgsite.html staging/pro-cooking.html \
 staging/postfix-dovecot-sni.html staging/hackrf.html staging/ipv6.html staging/sbcl-timers.html staging/multithreading.html \
-staging/market1.html staging/contact.html 
+staging/market1.html staging/contact.html staging/market2.html
 
 default: $(TARGETS)
 

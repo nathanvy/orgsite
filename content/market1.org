@@ -1,8 +1,12 @@
 * Trading Part 1: Modelling
-  #+html:<span class="green">
- 18 February 2022
-  #+html:</span>
-  I've been investing for close to two decades and actively trading since about 2019, a few years before the Gamestop shenanigans caused retail trading to explode in popularity.  Two summers ago I decided to get serious about trading, and to that end I have been developing an algorithmic trading application.  This series of articles details some of my learning's.  I find that writing them out long-form helps cement the concepts in my mind, so this might be considered "study notes", but I've decided to publish them here in case they're of benefit to anyone else.
+#+html:<span class="green">
+18 February 2022
+#+html:</span>
+
+[[file:market2.html][Part 2]]
+[[file:market3.html][Part 3]]
+  
+I've been investing for close to two decades and actively trading since about 2019, a few years before the Gamestop shenanigans caused retail trading to explode in popularity.  Two summers ago I decided to get serious about trading, and to that end I have been developing an algorithmic trading application.  This series of articles details some of my learning's.  I find that writing them out long-form helps cement the concepts in my mind, so this might be considered "study notes", but I've decided to publish them here in case they're of benefit to anyone else.
 
 *** The Gambler's Approach
 I play poker (not professionally) and one of the best piece of wisdom I picked up over the years is to only play statistically-advantageous positions.  For example in poker we have the concept of the "pot odds".  Suppose you are playing Texas Hold'em and on the table there are 3 cards (the Flop) consisting of the 3 of diamonds, the 3 of clubs, and the 7 of clubs.  Suppose in your hand you have the 4 and 5 of clubs.  If a 6 of clubs come up on either the Turn or River cards then you have a straight-flush, and probably the best hand possible.  There are four 6s somewhere in the deck and possibly in your opponent's hands, but only one will give you the straight-flush.  Any other 6 would give you a straight, and any other club would give you a flush.  Both are powerful hands.
