@@ -27,6 +27,7 @@ clean:
 	rm -rf stage1/
 
 deploy:
+	cp content/favicon/* staging/
 	mkdir -p staging/css
 	cp content/css/styles.css staging/css/
 	mkdir -p staging/img
