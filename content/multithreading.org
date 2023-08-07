@@ -1,5 +1,5 @@
 * Howto: Multithreaded TCP Server in Common Lisp
-  #+html:<span class="green">
+  #+html:<span class="is-primary">
  15 September 2022
   #+html:</span>
   I recently decided to start doing the [[https://protohackers.com][Protohackers]] challenges (in addition to [[https://cryptopals.com][cryptopals]] which I'm already doing).  Whereas I'm doing cryptopals in C#, I decided I'd flex a different muscle and do Protohackers in Common Lisp.  I have never done any direct network programming before, which is to say all the programming I've done that touches networking (web scraping, IRC clients, etc.) has all been at a higher level of abstraction and I've never had to worry about this stuff.

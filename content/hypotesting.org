@@ -1,0 +1,5 @@
+* Hypothesis testing
+
+ 18 June 2023
+
+ What you're really testing with e.g. p = 0.05 is, given some mean of a sample, if the probability of that mean occurring is less than 5%, we reject the null hypothesis, otherwise it fails to be rejected.  5% is a common target because that means you're outside two standard deviations on a normal distribution curve.

@@ -1,5 +1,5 @@
 * Exploring the RF Spectrum with HackRF
-    #+html:<span class="green">
+    #+html:<span class="is-primary">
   04 August 2021
   #+html:</span>
   I find electromagnetics/electrodynamics very hard to learn.  Not because the material is challenging (though it is definitely very challenging at times), but because the quality of the material you can find online is often very poor.  It's actually very hard to find good online resources that are accessible to people without Master's-level electrical engineering degrees.

@@ -1,5 +1,5 @@
 * IPv6 Prefix Delegation from Telus on a Ubiquiti EdgeRouter
-  #+html:<span class="green">
+  #+html:<span class="is-primary">
   03 Oct 2021
   #+html:</span>
   I recently moved to a new city for work (yes, again.  I hate moving.) and I decided that I would finally get around to setting up a proper wireguard VPN between my various beaglebones, [[file:raspi.html][raspberry pis]], thinkpads, and the server that this website runs on.  I have fibre to the home from Telus (they call their product "PureFibre") and my home network setup is detailed [[file:ubiquiti.html][elsewhere on this blog]]]].  As a precursor to getting everything running on wireguard, I wanted to get all my devices set up with globally-routable IPv6 addresses.  Most of the IPv6 tutorials out there cover the addressing and subnetting schemes and then stop short, so I had a lot of learning to do.  I will regurgitate most of that here in the hopes it will help someone else.

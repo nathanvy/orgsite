@@ -1,5 +1,5 @@
 * The missing manual section for SBCL timers that I needed
-  #+html:<span class="green">
+  #+html:<span class="is-primary">
   28 August 2022
   #+html:</span>
   Since about February of 2021 I've been slowly developing an algorithmic trading application in Common Lisp.  I don't use any of the so-called "algo platforms" and instead I wrote a simple REST client to talk to my brokerage's API, download the data I need, and crunch the numbers on my end.  My algorithm trades a variant of low-frequency statistical arbitrage which, in a nutshell, attempts to profit from mean-reverting properties of the market.  That is to say it does a fancy version of /buy low and sell high/.

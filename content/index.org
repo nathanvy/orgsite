@@ -8,69 +8,47 @@ This is a living notebook, kinda like a wiki but way more cumbersome to edit.  H
 [[file:contact.html][Contact Me]]
 
 * ARTICLES:
+** June 2023
+*** [[file:busy.html][On being busy]]
+Or, why I haven't written anything since November.
+
 ** November 2022
-#+html:<span class="mt0">
 *** [[file:market2.html][Algorithmic Trading Series Part 2:  Validating Assumptions]]
-#+html:</span>
 Part 2 of a series on algorithmic trading, in which I examine some assumptions I made in part 1.
 
 ** September 2022
-#+html:<span class="mt0">
 *** [[file:multithreading.html][Multithreaded TCP Server in Common Lisp]]
-#+html:</span>
 Some learning as I solve Challenge 0 of Protohackers in Common Lisp by writing a multithreaded TCP Echo Server.
 
 ** August 2022
-#+html:<span class="mt0">
 *** [[file:sbcl-timers.html][SBCL Timers]]
-#+html:</span>
 Notes to self regarding a gotcha in SBCL's implementation for the next time I try to mess around with Common Lisp timers.
 
 ** February 2022
-#+html: <span class="mt0">
 *** [[file:market1.html][Algorithmic Trading Series Part 1:  Modelling]]
-#+html:</span>
 The first in what I hope will be a long series of posts about quantitative finance, algorithmic trading, and markets in general.
 
 ** October 2021
-#+html:<span class="mt0">
 *** [[file:ipv6.html][IPv6 Prefix Delegation on the EdgeRouter X]]
-#+html:</span>
 Setting up IPv6 Prefix Delegation on the Ubiquiti EdgeRouter X SFP, on my fibre-to-the-home connection from Telus.
     
 ** July 2021
-#+html:<span class="mt0">
 *** [[file:postfix-dovecot-sni.html][Server Name Indication (SNI) in dovecot and postfix]]
-#+html:</span>
 A small erratum for the wonderful Workaround.org ISPmail guide, and a howto for getting SNI working with dovecot and postfix.
-    
-** June 2021
-#+html:<span class="mt0">
-*** [[file:pro-cooking.html][PRO @ COOKING]]
-#+html: </span>
-A nod to Pure Pwnage, and a friendly dig at the excessive page weight of most cooking blogs.
-  
+      
 ** March 2021
-#+html: <span class="mt0">
 *** [[file:raspi.html][RASPI GARDENER]]
-#+html: </span>
 Augmented gardening with embedded systems and push notifications to my phone.
 
 ** January 2021
-#+html: <span class="mt0">
 *** [[file:orgsite.html][BLOGGING WITH ORG-MODE AND GNU MAKE]]
-#+html: </span>
 I've tried I think all the static site generators at this point and most of them are over-engineered for my use case so I wrote my own ultra-minimalist one.
     
 ** December 2020
-#+html: <span class="mt0">
 *** [[file:csharp-emacs.html][DEVELOPING IN C# WITH .NET CORE AND EMACS]]
-#+html: </span>
 Troll your friends and coworkers by writing C# in Emacs, with "intellisense" code-completion!
     
 ** October  2020
-#+html: <span class="mt0">
 *** [[file:ubiquiti.html][UNIFI-CATION]]
-#+html: </span>
 Upgrading my home network by installing some Ubiquiti UniFi gear.
      

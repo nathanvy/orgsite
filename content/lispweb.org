@@ -1,0 +1,52 @@
+* Writing Web Applications in Common Lisp
+
+ #+html:<span class="is-primary">
+ 14 April 2023
+ #+html:</span>
+ It's been a minute or two since I posted last, and it's because life has a way of demolishing your free time.  I've gone back to school to get a Masters' degree and we have kids, so I decided what better way to live a stress-free life than to destroy any remaining semblance of a social life by starting a [[https://en.wikipedia.org/wiki/Software_as_a_service][Saas]] startup, right?
+
+*** Warmup round
+Rather than jumping right in, I thought I'd refresh my skills by rewriting an existing app as a warm-up.  A while ago I wrote a TODO web app called Finalist using a fun framework called [[https://github.com/rabbibotton/clog][CLOG]] which is pretty groovy but it pulls in jQuery, w3.css, and it operates based on keeping a websocket open.
+
+For a line-of-business desktop browser/intranet app I think this would actually work really well, and CLOG lets you be really, really productive.  You can use the Builder to get things off the ground in a fraction of the time it might take you otherwise but I'm using a mobile-first philosophy and what I noticed was that every time my phone goes to sleep, the CLOG websocket dies and requires a full refresh/re-authentication.  A todo/grocery app is basically just a CRUD app so what I really want is mostly-static HTML with little dynamic bits, so after a great deal of research I settled on the following stack:
+
+- [[https://github.com/fukamachi/ningle][ningle]] 
+- [[https://github.com/fukamachi/clack][clack]] / [[https://github.com/fukamachi/lack][lack]] 
+- [[https://github.com/fukamachi/woo][woo]]
+- [[https://htmx.org][htmx]]
+
+
+Diligent readers will note that most of these are Fukamachi software, and they have a reputation for being poorly documented (at best).  Well, that brings us to the point of this article which is that I couldn't find a good example that ties everything together, so I figured I might as well create one.
+
+*** Woo, the httpd
+~woo~ is a very barebones http server that aims to be the fastest httpd out there.  It's very performant, surpassing ~hunchentoot~ by a massive margin.  Woo operates on functions, meaning a woo "application", if you can even call it that, is just a lambda that returns a list in a particular format, for example:
+
+#+begin_src lisp
+  (woo:run
+   (lambda (environment)
+     (declare (ignore environment))
+     '(200 (:content-type "text/plain") ("Hello, world!"))))
+#+end_src
+
+The first item in the list returned is an HTTP status code, the second are any headers to add, and the third is a list of strings (or HTML, or a pathname).  Woo itself provides no routing or session management facilities whatsoever, so we'll use libraries for that.
+
+*** Clack and Lack
+~clack~ is basically a compatibility shim/abstraction layer for http servers.  It wraps hunchentoot, woo, wookie, or whatever else and provides the ~clackup~ function to start servers.  Clack is also very spartan.  A clack app is again just a function, and looks like this:
+
+#+begin_src lisp
+  (defvar *app*
+    (clack:clackup
+      (lambda (env)
+        (declare (ignore env))
+        '(200 (:content-type "text/plain") ("Hello, World!")))))
+#+end_src
+
+Again, your third parameter can be either a list of strings, html, or a pathname.  All this really does is abstract over woo (or hunchentoot) so you basically never have to touch them.  For middleware we need ~lack~, which provides a builder macro/DSL to do what's called "wrapping" the existing clack app with middleware functions.  A lack wrapper/middleware is just a function that takes an application and returns a new one, presumably with greater functionality:
+
+#+begin_src lisp
+  (lack:builder
+   :session
+   (lambda (env)
+     (declare (ignore env))
+     '(200 () ("Hello, World!"))))
+#+end_src

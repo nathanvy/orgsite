@@ -1,5 +1,5 @@
 * Blogging with Org-Mode and GNU Make
-  #+html:<span class="green">
+  #+html:<span class="is-primary">
 12 January 2021
   #+html:</span>
 

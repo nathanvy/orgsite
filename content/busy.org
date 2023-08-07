@@ -1,0 +1,25 @@
+* On being busy
+
+ #+html:<span class="is-primary">
+ 08 June 2023
+ #+html:</span>
+
+tl;dr big oof.
+
+Last year I applied and was accepted to an MBA program and /holy shit/ has it been way more work than I was expecting.  I had big plans.
+
+- Parenting two kids
+- Actually having a social life
+- Playing in frisbee tournaments
+- Robot greenhouse
+- Automated irrigation for my garden, and I guess for the robot greenhouse
+- Launching a Saas startup
+- Pwning the allies in IL2 Sturmovik
+- Rodent-proofing my hundred-year-old house
+- Generally enjoying post-COVID life again
+
+
+Ain't nobody got time for that.  Between parenting and spouse-ing and school I barely remember last week, it's been a blur.  One thing's been interesting though and that's that in my analytics course coming up they're making us use [[https://www.r-project.org/][the R programming language]], I guess because Python is too avant-garde or something?
+
+Anyways.  R is really weird.  I have trouble grokking a language with five different assignment operators, the most commonly-used of which is ~<-~.  Instead of doing all the things in that list above I spent most of last week fucking around with my [[https://github.com/nathanvy/dotemacs][emacs config]] trying to get a sane setup for writing R in org-mode and/or [[https://ess.r-project.org/][ESS]].
+

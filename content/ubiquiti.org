@@ -1,5 +1,5 @@
 * UniFi-cation
-    #+html:<span class="green">
+    #+html:<span class="is-primary">
 19 October 2020 
   #+html:</span>
   I recently moved to a new city for work, and our new home is about the same square footage but it's on fewer floors (only one loft upstairs, no basement, just a crawlspace) so our main level is quite a bit larger than our previous place in Ontario. I happen to have Fibre-to-the-home (FTTH) from Telus here, and the fibre line comes in from the street in the front corner of the house. That means, using the shitty Telus-provided wifi router, we couldn't get signal to the entire house and certainly not on the back patio where I want to be able to work when the weather is nice. This article documents some of the hurdles I had to overcome to take my wifi to the next level. Shout-out to my brother for invaluable assistance!

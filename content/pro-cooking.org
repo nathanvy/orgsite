@@ -1,5 +1,5 @@
 * PRO AT COOKING
-  #+html:<span class="green">
+  #+html:<span class="is-primary">
  27 June 2021
   #+html:</span>
   For the uninitiated:  https://www.youtube.com/watch?v=uYwvfxWF460

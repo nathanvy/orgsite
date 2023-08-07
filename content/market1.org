@@ -1,5 +1,5 @@
 * Trading Part 1: Modelling
-#+html:<span class="green">
+#+html:<span class="is-primary">
 18 February 2022
 #+html:</span>
 
