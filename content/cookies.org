@@ -1,0 +1,51 @@
+* Cookies
+
+ #+html:<span class="is-primary">
+ 07 December 2023
+ #+html:</span>
+
+Not those cookies.  The edible, delicious kind.  I used to always swear by my Mom's recipe, but over the years as I've become a better cook/baker I have iterated upon her original recipe until I've arrived here at what I believe is the ultimate chocolate chip cookie recipe which I now release to you under the terms of the GNU Public License 2nd Edition.
+
+Dense and chewy on the inside but crunchy around the outside, thick enough to feel good when you chew it, not too sweet, not too savory.
+
+Here's a photo from this afternoon of how they look after coming out of the oven:
+
+[[file:img/cookies-sm.jpg]]
+
+These cookies are serious business.  You have been warned.
+
+*** Ingredients
+- 2 1/4 to 2 1/2 cups of unbleached flour, depending on humidity.  When in doubt go for 2.5
+- 1/2 cup of white sugar
+- 1 cup of golden brown sugar
+- 2 large eggs, beaten
+- 1/2 cup of salted butter, preferably grass-fed
+- 1/2 cup of lard or shortening (lard is best, trust me)
+- 2 teaspoons corn or potato starch
+- 2 teaspoons vanilla extract
+- 1 teaspoon baking soda
+- 1/2 teaspoon salt
+- 1 to 1 1/2 cups of irregularly-chopped good quality bittersweet chocolate (or chocolate chips, if you must)
+- Finishing salt
+
+Preheat the oven to 350 degrees Fahrenheit.  Put the white and brown sugar in the mixing bowl.
+
+In a thick-bottomed pan, brown the butter on the stove top over medium heat until it smells nutty and takes on a distinct brown colour.  Take it off immediately and put it into your mixing bowl.  Turn on the mixer to its slowest setting and stir the sugars together with the melted butter.  This will stop it from continuing to brown and reduces the risk your butter will taste burnt.  Add the lard, vanilla, and beaten eggs.  Stir until the mixture is smooth and uniform.
+
+In a separate bowl, combine the flour, salt, soda, and starch.  With the mixer running on low, gradually add the dry ingredients to the wet.  Mix until well-combined.  Do not overmix.
+
+At this point it is time to add the chocolate.  On the topic of chocolate, what I find is best is to hack up a slab of good-quality chocolate with a knife, or maybe pulse it briefly in the food processor.  What you want is a gradient of chocolate particle sizes from small shavings all the way up to large chunks.  I find this non-uniformity really adds that extra something.  In a pinch you can use store-bought chocolate chips but the quality of the chocolate is what sets great cookies apart from merely good cookies.
+
+Anyways.  Add the chocolate to the mixer, and once the chocolate is combined, let the dough stand for a few minutes while you get the parchment paper for your pans.
+
+If your kitchen is very warm (because maybe it's summer and your oven is running) then put the dough in the fridge for 20 minutes.
+
+Working with dry hands, spoon the dough onto the parchment paper-lined baking sheet.  Use a measuring spoon so that your cookies are uniform in size.  I find that two tablespoons (2 tbsp) of dough per cookie works best.  Roll the cookies into a ball and then squash them onto the baking sheet.  Sprinkle with a small amount of finishing salt.
+
+Bake at 350 for about 10 minutes.  They are done when the outer edges develop a golden brown colour and you can see the cookies starting to develop cracks where the dough has expanded.
+
+Leave them to cool completely on the baking sheet!  This lets them cool down very gradually and in my experience it really helps them stay chewy and moist.
+
+At 2 tbsp of dough per cookie, this recipe makes about three dozen cookies.
+
+Enjoy!

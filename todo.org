@@ -1,0 +1,20 @@
+* fonts
+amiga4ever for headings with a dropshadow
+dos for subheadings and navigation
+a monospace font at 1.25rem for body copy
+
+* colors
+green 41ff00
+dk green 357620
+pink ff00db
+dk pink 5d298b
+body text eadbff
+bg 21183c
+
+* new colors
+bg 293462
+yellow FEDB39
+dk yellow
+red D61C4E
+dk red 6C0F29
+body text 1CD6CE (mint)

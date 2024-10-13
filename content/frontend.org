@@ -1,0 +1,43 @@
+* I now understand why front-end frameworks are a thing
+
+ #+html:<span class="is-primary">
+ 04 Oct 2024
+ #+html:</span>
+
+tl;dr [[https://en.wikipedia.org/wiki/Bill_O%27Reilly_(political_commentator)#Viral_video][Fuck it, we'll do it live!]]
+
+For a long time I resisted learning "modern" frontend development.  I would look into it from time to time but the rate at which the frontend framework /du jour/ was changing was extremely rapid and it just didn't seem worth it to invest time and energy into learning, say, ~Angular.js~ when it would be considered passé and obsolete in a year's time.
+
+React became somewhat of a de-facto standard but it's become almost its own thing, and I didn't want to learn React without first developing an appreciation for the problems it set out to solve.  So I set out to write something from scratch using only vanilla JS for the frontend.  A few years ago I had written a checklist app using [[https://github.com/rabbibotton/clog][clog]] but there was a breaking change that required some reworking to get my app working again.  Clog is really neat but the default behaviour is to keep a websocket open between the front and back ends, which is great for snappy pageloads but when your phone goes to sleep it kills the socket which means a full page refresh which means you lose any changes that haven't been persisted to the database.
+
+So I figured, why not just rewrite it into a RESTful single page app?  How hard could it be?  Ha.  Hahaha.  Haha.
+
+*** The Goal
+The goal was to rewrite my existing app away from Common Lisp (which is still groovy!  But not for frontend work) into something that meets the following criteria for the frontend:
+
+- Vanilla JS, no frameworks
+- Responsive, handles swipes/touch events
+- No third-party dependencies.  Must only use what the browser provides.
+- Lightweight
+- RESTful so that the front and back ends are decoupled/modular
+- Single Page App-style, client-side routing
+
+And for the backend:
+
+- Mostly just something that is well-suited to web development
+- Also lightweight
+
+
+I ended up choosing Go (golang) for the backend because of its comprehensive standard library and generally stable state of affairs.  I like garbage-collected languages for this type of application, and while I prefer writing Lisp, the library ecosystem over there just isn't great.  C# was definitely a contender but once I started wading into the web side of things it got really Microsoft-y and really Enterprise-y really fast which wasn't appealing to me for this sort of side project.  Also I already know golang, so that helps.
+
+*** The problem
+I don't actually know javascript that well.  Which isn't to say I can't write the code, because I can, and if I couldn't I could just ask an LLM to shit some out for me.  But mechanically putting code into a text buffer is of course the least important part.
+
+I suppose it's more correct to say that I don't know the browser APIs or "idiomatic" js very well.  My problem is that there are nine ways to do everything and it's not always immediately apparent what the best way is.  For example, you can iterate over an array with ~forEach~ or with the ~for ... of~ pattern, but only the latter returns a "non-live" collection which means if you want to iterate over a bunch of ~div~ elements and remove some of them conditionally with ~forEach~ you're going to have a bad time.  Then of course one has to become familiar with the humongous number of APIs that modern browsers expose, from history to touch events, bubbling, etc.  Let's just say that the MDN and I are now best friends.
+
+*** The result
+I shoved everything on the frontend to one giant 950-line file.  It's hideous, you'd hate it.  The golang backend runs behind a [[https://caddyserver.com/][Caddy]] reverse proxy that handles SSL termination, dealing with LetsEncrypt, and gzip compression.  The total page weight clocks in at just over 1kb, including images, which I think is great!
+
+Anyways, writing yet another TODO/grocery list app for my wife and I to remember the coffee cream is not something I consider a huge accomplishment, but I'm the kind of guy who enjoys making his own tools of this sort.
+
+And doing the whole thing in vanilla JS without a framework was a great learning experience.  I can say with 100% confidence that I know understand why front-end frameworks were invented.

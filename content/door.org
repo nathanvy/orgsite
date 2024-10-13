@@ -1,0 +1,30 @@
+* DIY Door Sensor
+
+ #+html:<span class="is-primary">
+ 18 January 2024
+ #+html:</span>
+
+My house has a "basement".  I use quotes because the height of the ceiling down there is mostly six feet, but there are countless beams and ducts and plumbing and other protrusions such that only somebody about 5 feet six inches tall can actually walk down there, so it's technically a crawlspace.  Anyways, there's a door to the exterior down there and my wife hates going down at night/alone to check if the deadbolt is locked, so with a spare beaglebone black I found lying in a drawer, I implemented a nice little sensor to tell us if the downstairs door is locked.  Now I can check the lock status without getting out of my cozy bed!  Let's look at how.
+
+*** GPIO Refresher
+In general, it'll be similar to the [[https://0x85.org/raspi.html][transducer I built for measuring soil moisture]], where we take a resistor across the 3.3 VDC output and a GPIO pin.  The switch (the door deadbolt) connects the GPIO pin to ground so that when the circuit is open there will be no voltage drop across the resistor, so the GPIO pin should read "high".  When the circuit is closed, current flows from the supply pin through the resistor to GND which will produce a voltage drop across the resistor and the GPIO pin should read "low".
+
+[[file:img/door-gpio.png]]
+
+Then it's just a matter of building a transducer that will detect when the deadbolt is locked.  Originally I wanted to use one of those small neodymium magnets paired with a Hall-effect or perhaps a magnetoresistive sensor to make the whole thing contactless and thus less prone to fatigue-related failures, but the clearance on the door is pretty tight.  I would have had to drill a hole into the deadbolt to seat the magnet, and I decided instead to go lo-fi with it:
+
+*** Super Duper Sophisticated Deadbolt Sensing Equipment
+Instead of using electromagnetic sensors, I took two springs out of ballpoint pens and soldered them to some perfboard I had lying around.
+
+[[file:img/door-transducer.jpg]]
+
+After that I just drilled a hole into the wall so that I could access the cross bore (the hole where the deadbolt engages the frame when locked) and used a keyhole saw to cut slots in the shape of the perfboard.  Then I simply squeezed the spring contraption in so that the deadbolt contacts the two springs when locked.
+
+[[file:img/door-installed.jpg]]
+
+After that, the remainder of the hardware was a simple matter of running about 14 feet of wires up and around the corner, making a small terminal board for the other end of the wires, and then connecting it to GPIO.
+
+*** Super Duper Sophisticated Signalling Protocol
+I'm very skeptical of security and privacy when it comes to the Internet of +Shit+ Things so I avoid cloud-enabled products unless I can control their connectivity.  I run an internal IRC network that's accessible via Tailscale tunnels (dope!) and my various bots sit in channels and alert me if things need my attention.  This project is no different; the doorbot shows up in ~#bots~ and chills with my algorithmic trader and my raspi gardener, but I've got [[https://en.wikipedia.org/wiki/Switch#Contact_bounce][bounce-related]] problems with the pen spring transducers that I have not had spare time to debug.  I plan to update this page in the future if and when I solve the problem.
+
+Very much a WIP.
