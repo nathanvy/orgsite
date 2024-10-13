@@ -52,7 +52,8 @@ GPIO.add_event_callback( measurementPin, callback=lambda x: self.edge_callback()
     3. In the callback function's body, set the pin low to discharge the capacitor and then do the timestamp arithmetic to determine how long it took to charge the capacitor.
     4. Decide, based on the computed value from the previous step, what to do.
 
-       It's important to note that we don't actually care what the capacitance value really is, so there's no need to start solving for Tau constants and all that good stuff because physics dictates that the moisture content in the soil will alter the dielectric constant of our capacitive probe.  So the charge/discharge time becomes a proxy measurement.  We configure/calibrate the python script to look for charge times that correspond with "sufficiently wet" and "sufficiently dry" and act when the measured value exceeds those bounds.
+
+    It's important to note that we don't actually care what the capacitance value really is, so there's no need to start solving for Tau constants and all that good stuff because physics dictates that the moisture content in the soil will alter the dielectric constant of our capacitive probe.  So the charge/discharge time becomes a proxy measurement.  We configure/calibrate the python script to look for charge times that correspond with "sufficiently wet" and "sufficiently dry" and act when the measured value exceeds those bounds.
 
        [[file:img/insitu-sm.jpg]]
        
