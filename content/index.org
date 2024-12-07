@@ -9,6 +9,9 @@ This is a living notebook, kinda like a wiki but wayyyyy more cumbersome to edit
 
 * ARTICLES:
 ** October 2024
+*** [[file:dataloss.html][Recovering from data loss]]
+Read about what happens when you forget to containerize postgres and some other infra oh and your automated backups only go monthly.
+
 *** [[file:frontend.html][I now  understand why Frontend Frameworks exist]]
 Viscerally.
 ** July 2024
@@ -17,11 +20,10 @@ In which I wax poetic in retrospective of my failed SaaS.
 ** January 2024
 *** [[file:door.html][Door Sensor]]
 Connecting ballpoint pen springs to a beaglebone black for fun and zero profit.
-** December 2023
+** 2023
 *** [[file:cookies.html][Cookies]]
 C is for Cookie, that's good enough for me...
 
-** June 2023
 *** [[file:busy.html][On being busy]]
 Or, why I haven't written anything since November.
 
