@@ -1,0 +1,123 @@
+* Advent of Cyber Side Quest (Part 4)
+
+27 December 2024
+
+Part four of the TryHackMe Advent of Cyber Side Quest!  See [[https://0x85.org/sidequest2024-1.html][Part 1]] for context.
+
+*** The Keycard
+I noticed a funny tidbit at the end of the Day 17 machine:  "Good thing we had a backup of the CCTV application from yesterday. We got it running again in no time!"  Hmm, a backup eh?
+
+I set my trusty sidekicks ~dirb~ and ~nmap~ into action and while they diligently performed their scans I started poking around the main quest machine, which was an instance of the Splunk analytics platform.  Well wouldn't you know it, but in the settings menu there was a section to configure the data sources, and most were unconfigured/had zero sources.  That makes sense because this is only a mockup of a real SOC, so they'd only added the data necessary for the purposes of the main quest.
+
+But.
+
+In one of the sections there were 11 files/directories configured.  On a lark I decided to add another, just to see what would happen.  I clicked "Browse" and was pleasantly surprised to find myself with a file chooser dialog showing what looked like complete access to the file system of the VM.  Naturally I looked in ~/root~ and ~/var/www/~, and within the webroot found a ~recordings/~ folder, which contained an mp4 with an interesting name:
+
+[[./img/hidden-recording.png]]
+
+About this time ~dirb~ reported it had found sweet-fuck-all but ~nmap~ noticed something running on port 8080.  The Splunk app itself had redirection, so I opted to try to ~wget 10.10.204.148:8080/recordings/rec1337-deleted.mp4~ which worked, and sure enough it was a short video with frames of the keycard within.
+
+*** T4: Krampus Festival
+Based on the challenge description this would involve Active Directory (AD).  After unlocking the machine with the keycard password, I did the customary scans and was greeted with a /ton/ of running services:
+
+#+begin_src
+53/tcp    open  domain         syn-ack
+80/tcp    open  http           syn-ack
+135/tcp   open  msrpc          syn-ack
+139/tcp   open  netbios-ssn    syn-ack
+143/tcp   open  imap           syn-ack
+445/tcp   open  microsoft-ds   syn-ack
+464/tcp   open  kpasswd5       syn-ack
+587/tcp   open  submission     syn-ack
+593/tcp   open  http-rpc-epmap syn-ack
+3389/tcp  open  ms-wbt-server  syn-ack
+5985/tcp  open  wsman          syn-ack
+7680/tcp  open  pando-pub      syn-ack
+9389/tcp  open  adws           syn-ack
+21337/tcp open  unknown        syn-ack
+49669/tcp open  unknown        syn-ack
+49670/tcp open  unknown        syn-ack
+49671/tcp open  unknown        syn-ack
+49672/tcp open  unknown        syn-ack
+49680/tcp open  unknown        syn-ack
+49695/tcp open  unknown        syn-ack
+49711/tcp open  unknown        syn-ack
+52881/tcp open  unknown        syn-ack
+#+end_src
+
+Holy shit.
+
+I began by poking at the services one by one, seeing what I could find.  On ~:80~ there was a login portal I couldn't access, and I couldn't get into the IMAP server, so I opted to see if any SMB shares were open:
+
+#+begin_src
+$smbclient -L 10.10.188.104
+Password for [WORKGROUP\user]:
+
+	Sharename       Type      Comment
+	---------       ----      -------
+	ADMIN$          Disk      Remote Admin
+	C$              Disk      Default share
+	ChristmasShare  Disk      
+	IPC$            IPC       Remote IPC
+	NETLOGON        Disk      Logon server share 
+	SYSVOL          Disk      Logon server share 
+#+end_src
+
+Christmas Share, eh?  That looks promising.
+
+#+begin_src
+$smbclient \\\\10.10.188.104\\ChristmasShare
+Password for [WORKGROUP\user]:
+Try "help" to get a list of possible commands.
+smb: \> dir
+  .                                   D        0  Mon Dec 16 13:13:45 2024
+  ..                                  D        0  Mon Dec 16 13:13:45 2024
+  approved.xlsx                       A     9626  Sat Dec  7 09:50:35 2024
+  Designer (6).jpeg                   A   315407  Mon Dec 16 12:05:20 2024
+  flag.txt                            A       65  Mon Dec 16 12:04:11 2024
+  steg.png                            A   239043  Mon Dec 16 12:05:32 2024
+
+		15728127 blocks of size 4096. 6204498 blocks available
+smb: \> 
+#+end_src
+
+Indeed, it contained the first flag.  I downloaded all those files, and spent a long time trying to find the steganography in ~steg.png~.  Binwalk said there was zlib-compressed data in there, but after a while I realized it was a false positive, but perhaps it was a hint because it prompted me to check the other files with binwalk.  The spreadsheet file contained what looked like a list of passwords, and checking this file with binwalk turned up some embedded xml metadata, one of which contained two usernames:  ~developer@test.corp~, and ~administrator@socmas.corp~.  I made a wordlist for these users and the passwords from the spreadsheet, and fed that into the login portal on port 80 using Burp.  No luck.  Next I tried hydra to see if I could get into the IMAP server, and thankfully that worked!  Hydra reported that ~developer@test.corp~ with password ~SilentSnow1~ were valid credentials.  I popped those into thunderbird and logged in.  There were three mails in the mailbox, two of which were to do with asking for usernames and passwords for "non user accounts", of which I suppose ~developer@test.corp~ is one.
+
+I poked around elsewhere a bit before coming back.  They couldn't possibly have a bot on the other end that responds to emails, could they?  I tried responding and incredibly got a response!  The angry admin wanted a .docx, so after much trial and error I managed to put together a malicious .docm that would pass VirusTotal.  I waited, fingers crossed, and lo and behold got a reverse shell!  I actually laughed out loud and probably woke my kids up when this happened.
+
+[[./img/get-phished.png]]
+
+With a shell running I found a flag in somebody's home directory and then got some help from a compatriot on Discord to map some things out with a tool called Bloodhound that I'd never heard of.  It's awesome, though, and it can find interesting links that might not be obvious to the outside:
+
+[[./img/bloodhound.png]]
+
+Looks like ~krampus_proxy~ is the Domain Admin (DA).  Also looks like if we can pwn the ~krampus_shadow~ account we'll be able to administrate IIS, so let's try that.  The revshell I was in was quite limited, so the first thing I did was get a chisel proxy tunnel set up, so that I could forward ldap and run tools from my laptop.  While exploring the domain I discovered that one user had their password in their comment field:
+
+[[./img/password-reuse.png]]
+
+I tried this password against all the other accounts and discovered it had been reused by the account ~krampus_debugger~.  I used these credentials and [[https://github.com/ShutdownRepo/pywhisker][pywhisker]] to get a kerberos ticket-granting ticket (TGT) for ~krampus_shadow~ and then leak that user's NTLM hash.  Since the machine has the winRM port open, with that hash I was able to perform a pass-the-hash attack and log in as ~krampus_shadow~ despite not knowing its password, and from there I was able to upload a webshell into the IIS webroot to then execute code as IIS.
+
+IIS reports that it has the following privileges:
+
+#+begin_src
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                               State   
+============================= ========================================= ========
+SeAssignPrimaryTokenPrivilege Replace a process level token             Disabled
+SeIncreaseQuotaPrivilege      Adjust memory quotas for a process        Disabled
+SeMachineAccountPrivilege     Add workstations to domain                Disabled
+SeAuditPrivilege              Generate security audits                  Disabled
+SeChangeNotifyPrivilege       Bypass traverse checking                  Enabled 
+SeImpersonatePrivilege        Impersonate a client after authentication Enabled 
+SeCreateGlobalPrivilege       Create global objects                     Enabled 
+SeIncreaseWorkingSetPrivilege Increase a process working set            Disabled
+
+#+end_src
+
+Of particular interest is ~SeImpersonatePrivilege~, which is enabled, and exploitable via the [[https://github.com/zcgonvh/EfsPotato][EfsPotato attack]].  I expect there is more than one way to solve this challenge, but I simply added ~krampus_shadow~ to local administrators, re-logged, and found the final flag in the ~krampus_proxy~ home directory.  Turns out I didn't need to get DA at all.
+
+This was a really fun challenge and quite a bit easier than T3.  The phishing part to get the initial access was really, really awesome, and I hope more challenges feature interactions like this in the future.
+
+On to [[https://0x85.org/sidequest2024-5.html][Task 5]]!

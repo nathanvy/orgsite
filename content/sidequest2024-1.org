@@ -1,0 +1,254 @@
+* Advent of Cyber Side Quest
+
+ 3 December 2024
+
+I discovered that [[https://tryhackme.com][TryHackMe]] has an annual "Advent of Code"-style event, except theirs is called Advent of Cyber and it's a cybersecurity challenge.  This is much more up my alley than Advent of Code.  There's nothing wrong with Advent of Code per se, it's just that the nature of the problems are not the sort of thing I find fun.
+
+*** Side Quest?
+The Advent of Cyber (hereafter AoC) has one challenge per day, and the challenges are generally very straightforward.  The challenge descriptions hold your hand a lot of the way, and there's not much to it.
+
+But.
+
+Hidden inside some of the main challenges one can find five Key Cards, T1 through T5, and they contain passwords that unlock machines in the Side Quest room.  The Side Quest is much more difficult and there is no guidance at all.  In the discord channel there is a strictly-enforced "no hints" policy.  Difficult hacking challenges with secret unlock codes???  Sign me up!  The embargo lifted at 00:00 GMT on the 31st of December so I can publish these now.
+
+*** The Keycard
+The first day of the main quest turned out to have the first keycard.  In the main quest we're asked to investigate a github repository to teach a lesson about poor opsec.  Well, if we explore the user's github repositories we see there's a [[https://github.com/Bloatware-WarevilleTHM/C2-Server][C2 server flask app]].  Interesting.  Running ~nmap~ on the main quest machine reveals there's something running on port 8080.  Could it be the C2 server?
+
+The default credentials didn't work, but a careful examination of the code reveals this snippet:
+
+#+begin_src python
+    @app.route("/dashboard")
+    def dashboard():
+      if "logged_in" not in session:
+	  return redirect(url_for("login"))
+      return render_template("dashboard.html")
+#+end_src
+
+So, it only checks if the session cookie contains the "logged in" key.  If the owner/attacker didn't change the application secret then we can forge session cookies and bypass the login.  Fortunately there's a tool for that called [[https://github.com/Paradoxis/Flask-Unsign][flask-unsign]].  A quick ~git clone~ later and we were into the C2 server's dashboard, which contained the keycard:
+
+[[./img/t1card.png]]
+
+*** T1:  Operation Tiny Frostbite
+Perfect!  Now we can start the sidequest machine, which contains only a single zip file for download.  The password from the keycard allows us to open the zip, which contains a ~pcap~ file.  ~pcap~ files are packet captures, and this one had quite a bit of traffic.  I spent many hours poking around, and eventually noticed a few things:
+
+- some mysql traffic
+- some encrypted traffic on port 9001
+- http endpoints serving 200 OK on ~/ff~ and ~/exp_file_credential~
+- the password that serves as the first flag
+- another passworded zip being transferred
+
+
+The http endpoints at ~/exp_file_credential~ and ~/ff~ serve binaries.  ~exp_file_credential~ looked interesting but I couldn't get anywhere with it.  The "ff binary", according to virustotal, was malware.  Specifically, a [[https://github.com/creaktive/tsh][tinyshell]] backdoor from the [[https://otx.alienvault.com/pulse/64bfb3065490283ee1988feb]["rekoobe"/"rekobee"]] attack.  Running ~strings~ on the ff binary revealed the string "SuP3RSeCrEt".
+
+Don't send this file to anyone on discord, or else you will trip their heuristics and get permanently banned.  Ask me how I know.
+
+Anyways, rekoobe implements a custom cryptosystem using two AES-CBC-128 ciphers, one for client-to-server and one for server-to-client.  I know how to attack AES CBC [[https://cryptopals.com/sets/2/challenges/16][under the right conditions]] but bitflipping attacks didn't seem feasible here.  Instead, it was a matter of re-implementing the tinyshell cryptosystem in python and decrypting the packet stream:
+
+#+begin_src python
+  from Crypto.Cipher import AES
+  from Crypto.Hash import SHA1, HMAC
+  import binascii
+  import struct
+  from scapy.all import *
+
+  class ShittyCrypto:
+      def __init__(self, key):
+	  self.key = key.encode()
+	  self.initial_iv = None
+        
+      def setup_context(self, iv):
+	  self.initial_iv = iv
+	  sha1 = SHA1.new()
+	  sha1.update(self.key)
+	  sha1.update(iv)
+	  key_material = sha1.digest()
+        
+	  self.aes_key = key_material[:16]
+        
+	  self.k_ipad = bytearray([0x36] * 64)
+	  self.k_opad = bytearray([0x5C] * 64)
+        
+	  for i in range(20):
+	      self.k_ipad[i] ^= key_material[i]
+	      self.k_opad[i] ^= key_material[i]
+            
+	  self.last_ct = iv[:16]
+	  self.packet_counter = 0
+	  self.consecutive_failures = 0
+
+      def decrypt_block(self, ciphertext):
+	  cipher = AES.new(self.aes_key, AES.MODE_ECB)
+	  temp = self.last_ct[:]
+	  self.last_ct = ciphertext[:16]
+        
+	  plaintext = cipher.decrypt(ciphertext)
+	  return bytes(a ^ b for a, b in zip(plaintext, temp))
+
+      def verify_hmac(self, ciphertext, hmac_tag):
+	  counter_bytes = struct.pack('>I', self.packet_counter)
+        
+	  inner = SHA1.new()
+	  inner.update(bytes(self.k_ipad))
+	  inner.update(ciphertext)
+	  inner.update(counter_bytes)
+	  inner_hash = inner.digest()
+        
+	  outer = SHA1.new()
+	  outer.update(bytes(self.k_opad))
+	  outer.update(inner_hash)
+        
+	  calculated_hmac = outer.digest()
+	  return calculated_hmac == hmac_tag
+
+      def try_decrypt_with_counter(self, encrypted_data, counter):
+	  if len(encrypted_data) < 36:
+	      return None
+        
+	  ciphertext = encrypted_data[:-20]
+	  hmac_tag = encrypted_data[-20:]
+        
+	  # Save current counter
+	  old_counter = self.packet_counter
+	  self.packet_counter = counter
+        
+	  if self.verify_hmac(ciphertext, hmac_tag):
+	      first_block = self.decrypt_block(ciphertext[:16])
+	      msg_len = (first_block[0] << 8) | first_block[1]
+            
+	      if msg_len > 0 and msg_len <= 8192:
+		  plaintext = first_block[2:16]
+		  for i in range(16, len(ciphertext), 16):
+		      block = self.decrypt_block(ciphertext[i:i+16])
+		      plaintext += block
+                    
+		  self.packet_counter = counter + 1
+		  self.consecutive_failures = 0
+		  return plaintext[:msg_len]
+            
+	  # Restore counter if decryption failed
+	  self.packet_counter = old_counter
+	  return None
+
+      def decrypt_message(self, encrypted_data):
+	  # Try current counter first
+	  result = self.try_decrypt_with_counter(encrypted_data, self.packet_counter)
+	  if result:
+	      return result
+
+	  # For client packets, try a wider range when stuck
+	  search_range = 20 if self.packet_counter <= 2 else 5
+        
+	  # Try counter values both forward and backward
+	  for i in range(self.packet_counter - search_range, self.packet_counter + search_range):
+	      if i >= 0:  # Ensure counter doesn't go negative
+		  result = self.try_decrypt_with_counter(encrypted_data, i)
+		  if result:
+		      return result
+                
+	  # If still failing, try resetting counter
+	  if self.consecutive_failures > 5:
+	      self.packet_counter = 0
+	      self.consecutive_failures = 0
+	      result = self.try_decrypt_with_counter(encrypted_data, 0)
+	      if result:
+		  return result
+            
+	  return None
+
+  def find_ivs(packets):
+      for i, pkt in enumerate(packets):
+	  if IP in pkt and TCP in pkt and Raw in pkt:
+	      if pkt[IP].src == "10.13.44.207" and pkt[TCP].dport == 9001:
+		  payload = bytes(pkt[Raw].load)
+		  if len(payload) == 40:
+		      client_iv = payload[:20]
+		      server_iv = payload[20:]
+		      print(f"Found IVs in packet {i+1}")
+		      print(f"Client IV: {client_iv.hex()}")
+		      print(f"Server IV: {server_iv.hex()}")
+		      return client_iv, server_iv, i
+      return None, None, 0
+
+  def process_pcap(pcap_file, password):
+      print(f"Reading pcap file: {pcap_file}")
+    
+      packets = rdpcap(pcap_file)
+      print(f"Found {len(packets)} packets in pcap")
+    
+      client_iv, server_iv, start_packet = find_ivs(packets)
+      if not client_iv or not server_iv:
+	  print("Could not find IVs")
+	  return
+    
+      client_crypto = ShittyCrypto(password)
+      server_crypto = ShittyCrypto(password)
+      client_crypto.setup_context(client_iv)
+      server_crypto.setup_context(server_iv)
+    
+      print("\nProcessing packets:")
+      successful_decryptions = []
+    
+      for i, pkt in enumerate(packets[start_packet+1:]):
+	  if IP in pkt and TCP in pkt and Raw in pkt:
+	      pkt_num = i + start_packet + 2
+	      print(f"\nPacket {pkt_num}:")
+	      print(f"Source: {pkt[IP].src}:{pkt[TCP].sport}")
+	      print(f"Dest: {pkt[IP].dst}:{pkt[TCP].dport}")
+            
+	      encrypted_data = bytes(pkt[Raw].load)
+	      print(f"Payload length: {len(encrypted_data)}")
+            
+	      direction = ""
+	      crypto = None
+            
+	      if pkt[IP].src == "10.13.44.207" and pkt[TCP].dport == 9001:
+		  direction = "C->S"
+		  crypto = client_crypto
+		  # Reset client counter if stuck at 2 for too long
+		  if crypto.packet_counter == 2 and crypto.consecutive_failures > 3:
+		      crypto.packet_counter = 0
+		      crypto.consecutive_failures = 0
+	      elif pkt[IP].src == "10.10.103.220" and pkt[TCP].sport == 9001:
+		  direction = "S->C"
+		  crypto = server_crypto
+                
+	      if crypto and direction:
+		  print(f"Attempting to decrypt {direction} packet (counter: {crypto.packet_counter})")
+		  decrypted = crypto.decrypt_message(encrypted_data)
+		  if decrypted:
+		      try:
+			  decoded = decrypted.decode('ascii', errors='replace')
+			  print(f"Successfully decrypted: {decoded}")
+			  successful_decryptions.append(f"Packet {pkt_num} {direction}: {decoded}")
+		      except:
+			  print(f"Successfully decrypted (hex): {decrypted.hex()}")
+			  successful_decryptions.append(f"Packet {pkt_num} {direction} (hex): {decrypted.hex()}")
+		  else:
+		      print("Decryption failed")
+	      else:
+		  print("Packet direction not matched")
+                
+      print("\nAll successful decryptions:")
+      for msg in successful_decryptions:
+	  print(msg)
+
+  if __name__ == "__main__":
+      if len(sys.argv) != 2:
+	  print("Usage: python3 decrypt.py <pcap_file>")
+	  sys.exit(1)
+
+      password = "SuP3RSeCrEt"
+      pcap_file = sys.argv[1]
+    
+      process_pcap(pcap_file, password)
+#+end_src
+
+Once that python code was written, it was a matter of determining which packets to feed it.  Fortunately the rekoobe attack starts by feeding the backdoor two 20-byte AES initialization vectors ("IVs"), and there was only one packet with ~tcp.len == 40~ in the entire packet capture.  This not only gives us the start of the TCP stream but also gives us the IVs we need to decrypt the AES traffic, using "SuP3RSeCrEt" as the key.
+
+[[./img/tcpstream.png]]
+
+With that done we can see the command that the attacker sent to zip up the exfiltrated data, which means we can also now open the second zip that we found.  That final zip contained an SQL dump which contained the final flag.
+
+The worst part?  After getting the final flag someone in a Discord private chat linked me to a purpose-built rekoobe analyzer tool that performs the decryption automatically, if you feed it a pcap.  Unfortunately the author seems to have taken it down and at the time of this writing I haven't been able to find a copy anywhere.
+
+Onto [[https://0x85.org/sidequest2024-2.html][Task 2]]!

