@@ -7,7 +7,7 @@ CXXPOST=templates/appendix.html
 TARGETS=staging/index.html staging/csharp-emacs.html staging/ubiquiti.html staging/raspi.html staging/orgsite.html staging/pro-cooking.html \
 staging/postfix-dovecot-sni.html staging/hackrf.html staging/ipv6.html staging/sbcl-timers.html staging/multithreading.html \
 staging/market1.html staging/contact.html staging/market2.html staging/busy.html staging/cookies.html staging/door.html \
-staging/postmortem.html staging/frontend.html
+staging/postmortem.html staging/frontend.html staging/sidequest2024-1.html staging/sidequest2024-2.html staging/sidequest2024-3.html staging/sidequest2024-4.html staging/sidequest2024-5.html
 
 default: $(TARGETS)
 

@@ -8,15 +8,34 @@ This is a living notebook, kinda like a wiki but wayyyyy more cumbersome to edit
 [[file:contact.html][Contact Me]]
 
 * ARTICLES:
+** December 2024
+*** [[file:sidequest2024-1.html][TryHackMe "Advent of Cyber" 2024 Side Quest Part 1]]
+Managed to solve the whole thing by December 30th.  Now that the embargo has lifted, I can write about these!  One of the most difficult and most rewarding challenges I've ever done!  This is the writeup for Part 1:  Operation Tiny Frostbyte, and also contains a little blurb for context about the Side Quest vs the Main Quest.
+
+*** [[file:sidequest2024-2.html][TryHackMe "Advent of Cyber" 2024 Side Quest Part 2]]
+Writeup for Part 2: Yin and Yang.  Writing malicious pub-sub nodes for fun and flags.
+
+*** [[file:sidequest2024-3.html][TryHackMe "Advent of Cyber" 2024 Side Quest Part 3]]
+Writeup for Part 3:  Escaping the Blizzard.  Heap overflows and container escapes.  Holy shit this one was by far the most difficult.
+
+*** [[file:sidequest2024-4.html][TryHackMe "Advent of Cyber" 2024 Side Quest Part 4]]
+Writeup for Part 4:  Krampus Festival.  Active Directory pwnage.
+
+*** [[file:sidequest2024-5.html][TryHackMe "Advent of Cyber" 2024 Side Quest Part 5]]
+Writeup for Part 5:  Avalanche of Web Apps.  Abusing git hooks and DNS redirection.  This one wasn't super difficult but it was probably the most confusing.
+
 ** October 2024
-*** [[file:frontend.html][I now  understand why Frontend Frameworks exist]]
+*** [[file:frontend.html][I now understand why Frontend Frameworks exist]]
 Viscerally.
+
 ** July 2024
 *** [[file:postmortem.html][Letting Go]]
 In which I wax poetic in retrospective of my failed SaaS.
+
 ** January 2024
 *** [[file:door.html][Door Sensor]]
 Connecting ballpoint pen springs to a beaglebone black for fun and zero profit.
+
 ** December 2023
 *** [[file:cookies.html][Cookies]]
 C is for Cookie, that's good enough for me...
