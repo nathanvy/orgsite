@@ -1,0 +1,63 @@
+* Writing C# in Emacs
+
+ 06 December 2024
+
+Quite by accident, I came across a post^H^H^H^H skeet on BlueSky about the TryHackMe "Advent of Cyber".  I was familiar with Advent of Code but had never heard of Advent of Cyber nor TryHackMe.  I decided to give it a shot.  The main challenges I found pretty straightforward and not that interesting, but then I heard someone in the Discord mention a "Side Quest", which was not intended for beginners.
+
+*** The Side Quest
+The Side Quest has a strict "No Hints" policy and is accessed by finding images of "Key Cards" with passwords on them hiding in the main challenges.  We're told the key cards are hidden between days 1-4, or 5-8 and so on and so forth.  I originally thought that this meant it was literally hidden (e.g. via steganography) on the challenge page, but that turned out not to be the case (which is good, because I find those types of scavenger hunts not so fun).
+
+The Side Quest is broken down into Tasks, the first three are a sort of Task 0 no-op, and the fourth task is called T1, which requires finding 4 [[https://en.wikipedia.org/wiki/Capture_the_flag_(Cyersecurity)][flags]] to pass.
+
+The main quest involved a fake youtube-to-mp3 converter and looking into a github issue where the attacker demonstrated poor opsec when asking for support.  The person who responded to the [[https://github.com/Bloatware-WarevilleTHM/CryptoWallet-Search/issues/1][github issue]] (a fictional character) turned out to have a second repository with a C2 server comprising a small flask app.  Examining the app revealed this route:
+
+#+begin_src python
+@app.route("/")
+def home():
+    if "logged_in" in session:
+        return redirect(url_for("dashboard"))
+    return redirect(url_for("login"))
+#+end_src
+
+It seems that if the session cookie contains ~logged_in = True~ then the app will happily assume we're properly authenticated and show us the dashboard.  Okay, well that's pretty neat and all, but what to do with it?  Well, when connected to the Main Quest's target VM I ran an nmap scan and determined that something was listening on port 8000 as well as port 80.
+
+*** Forging Ahead
+Innnnnteresting.
+
+I immediately navigated to http://target_vm:8000 and was presented with a rather plain-looking login screen.  This was the flask app, the C2 server!  The default admin password appeared to have been changed, so I couldn't log in.  Time to learn how to forge flask cookies.  They look like this:
+
+#+begin_src
+  <base64-encoded session data>.<timestamp>.<SHA1 hash>
+#+end_src
+
+All we need to know to forge a session cookie, therefore, is the app's secret key that it incorporates with the timestamp and the session data as a salt.  It turns out there is a tool floating around github called [[https://github.com/Paradoxis/Flask-Unsign][Flask-Unsign]] that is purpose-built for forging these cookies.  How convenient!  Assuming that the secret key had not been changed from github, I took another look and determined that the app was expecting the session data in JSON format.  It was therefore a simple matter of using flask-unsign like so:
+
+#+begin_src
+  $ flask-unsign --sign -c "{'logged_in': True, 'username': 'admin'}" --secret "@09JKD0934jd712?djD"
+#+end_src
+
+Popping that into my browser's cookies let me navigate directly to the dashboard, and from there:
+
+[ image of keycard ]
+
+The L1 Keycard, which confusingly said T1 on it instead of L1!  I assume this is just a typo.
+
+*** Investigating
+From there, I was able to start the T1 target machine, which contained only a single zip file called ~aoc_sq_1.zip~, which was password protected.  Using the password from the keycard, I was able to extract the zip file which contained a single ~.pcap~ file.  I immediately fired up wireshark and was initially overwhelmed by the contents.  I spent about a day picking and sorting through the pcap, and eventually found the following interesting items:
+
+- the first and second flags required by Task 1, in the form of plaintext http requests after a quick CTRL+F for "password"
+- an http endpoint at ~/ff~ serving some sort of binary file, hereafter referred to as "the ff binary"
+- another endpoint at ~/exp_file_credential~ serving another file, hereafter referred to as "the exp file"
+- the magic bytes for a zip file, ~0x50 0x4B 0x03 0x04~ being served on yet another endpoint, hereafter referred to as "the inner zip", which from the Task description I knew would very likely contain the 3rd and 4th flags.  This zip was also password-protected
+- A bunch of MySQL traffic
+- A bunch of encrypted traffic on TCP port 9001
+
+
+Not knowing where to proceed next I opted to submit the exp file and the ff binary to VirusTotal.  It turns out the exp file is a linux kernel exploit, and the ff binary is the rekoobe tinyshell.  Don't post these binaries on discord group chats or else you'll get your 8-year-old account permabanned for "malicious activity".  Ask me how I know.
+
+By this point there were a couple of us working together on Discord as a team, and we had spent many hours but got nowhere with the exp_file_credential exploint.  Somebody found the string "SuP3RSeCrEt" in the ff binary using Ghidra.  We spent quite a while analyzing the binary in concert with some c source code for tinyshell that we found on github.  Careful examination of the file ~pel.c~ ("pel" standing for Packet Encryption Layer") revealed that this attack uses AES-128-CBC traffic on port 9001, and it's established by an unencrypted packet containing exactly 40 bytes: 20 bytes for each of two AES IVs, one for client->server traffic and one for server->client traffic.
+
+A wireshark filter for ~tcp.len == 40~ revealed exactly one packet, and from there we were able to capture the entire conversation with a filter for ~tcp.stream eq 73832~, I exported just those packets as their own pcap file for easier manipulation.  Armed with this knowledge we collaborated on [ link to script ] [a script] that would ingest encrypted packets and perform the decryption.  This allowed us to view the commands that the "attacker" sent to the server, including the password for the inner zip file which was our third flag.  That inner zip file contained an sql dump which included the fourth and final flag.
+
+*** Done!
+It was an interesting and at times frustrating challenge.  The difficulty curve was rather strange.  Finding the keycard was straightforward once we knew where to look, but then the first two flags of T1 were trivial.  The third flag was very challenging, and the fourth was again trivial.  All in all, quite rewarding and I definitely learned a lot about ~scapy~!

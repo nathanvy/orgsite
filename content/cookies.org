@@ -4,7 +4,7 @@
  07 December 2023
  #+html:</span>
 
-Not those cookies.  The edible, delicious kind.  I used to always swear by my Mom's recipe, but over the years as I've become a better cook/baker I have iterated upon her original recipe until I've arrived here at what I believe is the ultimate chocolate chip cookie recipe which I now release to you under the terms of the GNU Public License 2nd Edition.
+Not the browser kind.  The edible, delicious kind.  I used to always swear by my Mom's recipe, but over the years as I've become a better cook/baker I have iterated upon her original recipe until I've arrived here at what I believe is the ultimate chocolate chip cookie recipe which I now release to you under the terms of the GNU Public License 2nd Edition.
 
 Dense and chewy on the inside but crunchy around the outside, thick enough to feel good when you chew it, not too sweet, not too savory.
 

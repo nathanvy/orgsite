@@ -1,0 +1,74 @@
+#+OPTIONS: ^:nil
+* Recovering from data loss
+
+ #+html:<span class="is-primary">
+ 23 October 2024
+ #+html:</span>
+
+I subscribe to the "pets, not cattle" philosophy for personal projects.  This website and a few other services are all hosted on a dedicated server in Kansas.  This server talks to a hodge-podge mix of PCEngines APUs and other boxen all connected by Tailscale, which is just friggin' magic.  Well, a few months ago a massive storm system rolled through Kansas and knocked out power to the DC.  Ever since, my server box has been a little wonky.  Last week, whether related or not, I happened to be logged in via ssh taking a backup of postgres, and noticed a bunch of kernel error messages being spammed across all my tmux panes, all looking similar to this:
+
+#+begin_src
+  kernel:[2458126.082448] EXT4-fs (sda1): failed to convert unwritten extents to written
+   extents -- potential data loss! (inode 24380260, error -30)
+#+end_src
+
+That's not good.  The filesystem was immediately set readonly and most bash commands would not run, returning only input/output errors.  A quick Google search confirmed my suspicions:  the most likely culprit was a disk failure.  I put in a support ticket and sure enough, the drive had failed.  The techs swapped a new drive in, reinstalled Debian, and... the server would stop responding on all 5 of its assigned IPv4 addresses shortly after boot.  All connection attempts to it would time out.  I asked them to reinstall a second time from a known-good Debian image, and they encountered an as-yet-unspecified "technical issue".  I'm still not sure what exactly happened but it took them almost 36 hours to get me back online, which gave me ample time to take inventory of everything that was on that machine.
+
+*** What are containers, Alex?
+
+[[file:img/trebek.jpg]]
+
+Thankfully /most/ of my stuff was containerized, but with a few notable exceptions:
+
+- Postgres (fuck my life)
+- Push notification scaffolding for my algorithmic trading bot
+- Internal IRCd for my raspberry pis and beaglebone blacks to tell me when my Norfolk spruce needs watering or when the downstairs deadbolt is unlocked.
+
+
+Unfortunately, I had one super duper postgres instance running which handled:
+
+- data storage for algo trader
+- backend db for the [[https://0x85.org/frontend.html][todo/checklist app]] I wrote for my wife and I
+- Internal mediawiki that I use for keeping track of stuff
+- persistent chat history for IRC
+- a few other smaller one-off projects
+
+
+And as I mentioned at the top, I was actively taking a fresh backup when all this went down.  Unfortunately that meant the last /complete/ SQL backup I had was from about a month prior.  The algo trader replicates its data to a different server on a daily basis, and the actual algo itself is on a third, different, machine, so I didn't lose too too much data, but it still stung, and was a major hassle to get back online.
+
+*** It's been so long I forget how all this shit^H^H^H^H stuff works
+In order to get everything back online again, I needed to have push notifications working so that my algo trader can alert me on my phone.  For that to work I needed pushbullet and [[https://github.com/ergochat/ergo][ergo IRC]] running.  For IRC running I needed [[https://caddyserver.com][Caddy]] running so I could use the certs for TLS.  For all that to work I had to remember how in the name of Darth Vader's face I cobbled this all together last time.
+
+It was /surprisingly hard/ to figure out where Caddy keeps its certificates.  Back when nginx was still cool I could look under ~/etc/letsencrypt~ but Caddy doesn't rely on certbot.  It has its own internal mechanism, and [[https://caddyserver.com/docs/conventions#data-directory][the docs]] are a little misleading at first.  They appear to indicate that the certs get stored somewhere under ~/home/caddy~ which on my system doesn't exist because that user is set to nologin:
+
+#+begin_src
+# grep "caddy" /etc/passwd
+caddy:x:998:998:Caddy web server:/var/lib/caddy:/usr/sbin/nologin
+#+end_src
+
+If you are coming here via Google or you're Future Me who screwed this up again, recall that the user's home directory is that second-last field, in this case ~$HOME~ is ~/var/lib/caddy/~, and the certs live a few directories down that tree.  Armed with that knowledge we can begin putting the scaffolding back up.  First, we'll install a script somewhere convenient to copy the certificates from Caddy's store to where ergo wants to see them:
+
+#+begin_src
+#!/bin/bash -eu
+
+cp /var/lib/caddy/.local/share/caddy/[long tree omitted]/the-domain.crt /home/ergo/fullchain.pem
+cp /var/lib/caddy/.local/share/caddy/[long tree omitted]/the-domain.key /home/ergo/privkey.pem
+chown ergo:ergo /home/ergo/*.pem
+  
+systemctl reload ergo.service
+#+end_src
+
+So that'll take care of actually copying the certs over, but in order to avoid just stuffing this into cron we could use [[https://github.com/mholt/caddy-events-exec][a Caddy plugin]] to enable ~cert_obtained~ event hooks, at the cost of having to maintain a custom build of Caddy that apt will happily clobber:
+
+#+begin_src
+{
+  events {
+    on cert_obtained exec /path/to/install-ergo-certs.sh
+  }
+}
+#+end_src
+
+Or, failing that, we can just pull the certs once in a while with cron or a systemd timer, which is what I ended up doing.  I quite simply do not have the time or the energy do track Caddy's updates separately.  If it's public-facing and I can't just ~apt update~ it, then I ain't gonna.
+
+*** What did we learn?
+Containerize your shit or be doomed to waste a day doing all this dumb stuff that I did above.
