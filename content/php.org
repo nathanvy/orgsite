@@ -1,0 +1,27 @@
+* PHP is pretty good, actually
+
+ #+html:<span class="is-primary">
+ 26 July 2025
+ #+html:</span>
+
+You know, I'm probably guilty of shitting on PHP.  Back in the late 90s and early 00s I, like many others, had a little too much fun breaking into phpbb (or even more easily into php-nuke) sites by abusing their numerous failures to sanitize user input which allowed SQL injections, remote file inclusions, XSS, the works.  Upload a web shell or a phpmyadmin and away you go.  So those of use who have this experience might be forgiven for recalling php less than fondly, and maybe even harboring a bit of contempt towards php for being /*checks notes*/ a broken tool for uncool noobs.
+
+*** Rails as an alternative
+Rails is pretty slick.  If you're building a CRUD app or something CRUD adjacent, you define your data model and rails will automagically generate almost everything you need.  Ruby itself is a neat, lisp-y little language that subjectively /feels/ nicer to write than php.  And it certainly has an awesome pedigree, with some pretty big names in Tech using/having used it including Shopify, AirBnB, and GitHub.
+
+*** Straying off the Happy Path
+But holy moly does the rails dx get starkly and abruptly rough once you dare to stray off the happy path.
+
+Suppose you are writing a simple, straightforward trading dashboard so you can keep tabs on the performance of your algorithmic trading application.  You don't want the trading algo implementation to have to serve http itself (and thus include a web server) so you quite reasonably reach for a framework with a great reputation for rapid application development like Rails.
+
+And then you notice that when you go to build your docker container you're getting an error about something called an Action Cable not being configured for production.  You've never even heard of Action Cable but you do that developer thing and read the docs and determine that it's a websocket facility.  So you quite reasonably say hey, I'm not using stuff like websockets and background job runners!  I'll just disable that.  So you open up your ~config/application.rb~ and comment out the "rails/all" require, then you manually include only the requires you actually need, like ActiveRecord.  Well my friend, congratulations because you have strayed off the happy path!
+
+*** Here be compile errors
+Rails seems to be very (very) tightly coupled.  Or, maybe it's the default config (which the docs and every unofficial tutorial practically demand that you use) simply doesn't consider non-default use cases.  Or maybe the docs don't cover this sort of thing, or maybe I'm just an impatient and shitty coder.
+
+But once you've strayed even a short distance from the happy path it's like that chapter from The Hobbit where Bilbo and the dwarves have been starving and lost in Mirkwood Forest for days and even though Gandalf warned them not to leave the path they do so because they see a glimmer of light through the darkness and trees and the further they go the further it seems to be until they stumble upon a clearing where elves are Doing Elf Shit and all the lights go out and chaos ensues and the dwarves get beat up and disappeared and Bilbo gets left for dead alone in the darkness in a hostile forest possessed by the evil influence of Sauron and—
+
+Yeah it's a lot like that, actually.  First rails chokes because it can't find ~sprockets/railtie~ so you manually require that, and then it needs a manifest and you realize that this doesn't seem right because rails is supposed to generate everything it needs so you dig through the docs and realize that sprockets is the /old/ asset pipeline for rails <= 7, but you're on rails 8 which is supposed to use ~propshaft~ for its asset pipeline.  So you do a little digging and argue with your friendly neighborhood LLM and try to add a require statement for propshaft, but now propshaft can't find whatever, and you solve that but now you hit another build failure and you have this moment of clarity that makes you realize, holy shit, all this just to query some postgres rows, serve some html and embed some chart.js data visualizations?
+
+*** I guess this is what crow tastes like
+It turns out php has been maintained all these years, and a lot of the problems of yore have solutions now.  So you get into your seat on an airliner one day and you spin up emacs on your laptop and write the whole thing in php in less than 5 hours.
