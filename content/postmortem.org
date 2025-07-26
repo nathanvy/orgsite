@@ -1,7 +1,7 @@
 * Letting Go
 
  #+html:<span class="is-primary">
- 31 July 2024
+ 30 September 2024
  #+html:</span>
 
 tl;dr I killed my startup this year.  It wasn't an easy decision.
@@ -55,7 +55,9 @@ By deciding to "undercut these idiots on price out of spite" I had unknowingly (
 
 By now we were into 2023 and ChatGPT had taken the world by storm.  Everyone was touting AI-powered everything including some of my competitors.  The competition had native mobile apps.  They had established customer bases in the States and in Canada.  They had dedicated customer acquisition pipelines, they had "Client Success Managers".
 
-And what I was hearing, over and over again, was that my product was good, but I just wasn't able to unstick my prospects from their existing paid solutions.  The conversions I did get were of the "One overworked person doing it all in Excel" kind, but those were fewer in number than I'd initially thought, and that led me to the realization that ultimately killed PRN:  I was selling scheduling software, but my successful competition was selling the freedom to not have to worry about the schedule at all.  They were offering turn-key solutions with video tutorials and dedicated account managers to get people up and running, because these doctors and nurses are all extremely busy and they're well-paid, too.  They're paid well enough that they'd rather pay more money for a turnkey solution than pay less for PRN.  My Cost Leadership strategy was getting its ass kicked because this particular segment of the market (doctors) aren't particularly price-sensitive for this type of product, and so the most successful products were the ones pursuing a Differentiation-type strategy, offering superior features and UX.
+And what I was hearing, over and over again, was that my product was good, but I just wasn't able to unstick my prospects from their existing paid solutions.  The conversions I did get were of the "One overworked person doing it all in Excel" kind, but those were fewer in number than I'd initially thought, and that led me to the realization that ultimately killed PRN:  I was selling scheduling software, but my successful competition was selling the freedom to not have to worry about the schedule at all.  They were offering turn-key solutions with video tutorials and dedicated account managers to get people up and running, because these doctors and nurses are all extremely busy and they're well-paid, too.  They're paid well enough that they'd rather pay more money for a turnkey solution than pay less for PRN.  My Cost Leadership strategy was getting its ass kicked because this particular segment of the market (doctors) aren't particularly price-sensitive for this type of product, and so the most successful products were the ones pursuing a Differentiation-type strategy, offering superior features and UX.  Maybe I was the idiot in this situation after all!
+
+[[file:img/skinner-out-of-touch.jpg]]
 
 *** The hardest part
 Once I realized /why/ I wasn't finding product-market fit, I started looking at what it would take to get there.  Everyone was excited by "AI", so I did a trial of integrating ChatGPT into my service but the results weren't better than what I was getting from my Annealing code.  Often they were worse, as the early versions of ChatGPT were particularly prone to hallucinations.  I realized that it would take probably several months of development time to get where I needed to be technically, and only then could I realistically start the business development side of things again.

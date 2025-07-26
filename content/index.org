@@ -1,5 +1,5 @@
 * ABOUT
-You can find me solving problems at the intersection where tech and business collide.  My background is in aerospace engineering, and I currently live on Vancouver Island with my awesome wife and kids.  I'm passionate about environmental sustainability, quantitative finance, hardware hacking, infosec & cryptography, elections integrity, World War II combat flight simulators, and ultimate frisbee.  
+You can find me solving problems at the intersection where tech and business collide.  My background is in aerospace engineering, and I currently live on Vancouver Island with my awesome wife and kids.  I'm passionate about making delicious food (and then eating it), environmental sustainability, quantitative finance, hardware hacking, infosec & cryptography, World War II combat flight simulators, and ultimate frisbee.  
 
 When COVID happened I thought like some people that it wouldn't be such a long haul.  I learned to cook the 5 mother sauces and played a lot of video games.  As the pandemic and lockdowns stretched on I figured I'd start blogging about things that interest me, but what resulted is this.  It's not so much a blog as a notebook where I gradually collect articles that I write about topics that interest me that may or may not have any value to anyone else.
 
@@ -8,7 +8,14 @@ This is a living notebook, kinda like a wiki but wayyyyy more cumbersome to edit
 [[file:contact.html][Contact Me]]
 
 * ARTICLES:
-** December 2024
+** 2025
+*** [[file:php.html][PHP isn't so bad, actually]]
+It's kinda janky and has legacy cruft but it's been maintained all these years and remains a decent choice for people who value productivity and simplicity.
+
+*** [[file:derivatives.html][Algorithmic Trading: Pricing Derivatives]]
+Or, how I learned to stop worrying and love the binomial options pricing model.
+
+** 2024
 *** [[file:sidequest2024-1.html][TryHackMe "Advent of Cyber" 2024 Side Quest Part 1]]
 Managed to solve the whole thing by December 30th.  Now that the embargo has lifted, I can write about these!  One of the most difficult and most rewarding challenges I've ever done!  This is the writeup for Part 1:  Operation Tiny Frostbyte, and also contains a little blurb for context about the Side Quest vs the Main Quest.
 
@@ -24,18 +31,15 @@ Writeup for Part 4:  Krampus Festival.  Active Directory pwnage.
 *** [[file:sidequest2024-5.html][TryHackMe "Advent of Cyber" 2024 Side Quest Part 5]]
 Writeup for Part 5:  Avalanche of Web Apps.  Abusing git hooks and DNS redirection.  This one wasn't super difficult but it was probably the most confusing.
 
-** October 2024
 *** [[file:frontend.html][I now understand why Frontend Frameworks exist]]
 Viscerally.
 
 *** [[file:dataloss.html][Recovering from data loss]]
 Read about what happens when you forget to containerize postgres and some other infra oh and your automated backups only go monthly.
 
-** July 2024
 *** [[file:postmortem.html][Letting Go]]
 In which I wax poetic in retrospective of my failed SaaS.
 
-** January 2024
 *** [[file:door.html][Door Sensor]]
 Connecting ballpoint pen springs to a beaglebone black for fun and zero profit.
 

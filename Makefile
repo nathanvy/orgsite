@@ -8,7 +8,7 @@ TARGETS=staging/index.html staging/csharp-emacs.html staging/ubiquiti.html stagi
 staging/postfix-dovecot-sni.html staging/hackrf.html staging/ipv6.html staging/sbcl-timers.html staging/multithreading.html \
 staging/market1.html staging/contact.html staging/market2.html staging/busy.html staging/cookies.html staging/door.html \
 staging/postmortem.html staging/frontend.html staging/sidequest2024-1.html staging/sidequest2024-2.html staging/sidequest2024-3.html staging/sidequest2024-4.html staging/sidequest2024-5.html \
-staging/dataloss.html
+staging/dataloss.html staging/derivatives.html staging/php.html
 
 default: $(TARGETS)
 
